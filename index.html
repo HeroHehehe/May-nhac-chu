@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Teleprompter Pro - Máy Nhắc Chữ Chuyên Nghiệp</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M4 6h16v12H4z'/><path d='M8 10h8m-8 4h5' stroke='white' stroke-width='2' stroke-linecap='round'/></svg>">
   
@@ -20,12 +20,6 @@
               500: '#6366f1',
               600: '#4f46e5',
               700: '#4338ca',
-            },
-            sepia: {
-              base: '#fbf0d9',
-              text: '#2d2217',
-              panel: '#ebdcc0',
-              border: '#d4c39e'
             }
           },
           fontFamily: {
@@ -40,121 +34,125 @@
   <!-- Google Fonts: Inter & Be Vietnam Pro -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* Custom scrollbar */
+    /* Prevent text selection and unwanted native bounce */
+    body {
+      overscroll-behavior: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Hardware Accelerated Layer for Ultra Smooth 120/144Hz scroll */
+    .gpu-scroll-layer {
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      perspective: 1000px;
+    }
+
+    /* Custom scrollbar for editor */
     ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
     }
     ::-webkit-scrollbar-track {
-      background: rgba(0,0,0,0.05);
+      background: rgba(0,0,0,0.1);
     }
     ::-webkit-scrollbar-thumb {
-      background: rgba(150,150,150,0.3);
+      background: rgba(150,150,150,0.25);
       border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(150,150,150,0.5);
+      background: rgba(150,150,150,0.45);
     }
 
-    /* Flip transformations for Teleprompter glass rigs */
-    .teleprompter-flip-x {
+    /* Flip Mirror Transformations */
+    .flip-x {
       transform: scaleX(-1);
     }
-    .teleprompter-flip-y {
+    .flip-y {
       transform: scaleY(-1);
     }
-    .teleprompter-flip-both {
+    .flip-both {
       transform: scale(-1, -1);
     }
 
-    /* Eye-line Reading Focus Indicator */
-    .eyeline-guide {
-      position: fixed;
-      top: 30%;
-      left: 0;
-      right: 0;
-      height: 80px;
-      transform: translateY(-50%);
-      pointer-events: none;
-      z-index: 30;
-      transition: opacity 0.25s ease;
+    /* Countdown scale animation */
+    @keyframes countPop {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-count-pop {
+      animation: countPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
 
-    /* Pulse animation for voice recognition indicator */
-    @keyframes pulse-ring {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.15); opacity: 0.4; }
-      100% { transform: scale(0.95); opacity: 0.8; }
-    }
-    .mic-pulsing {
-      animation: pulse-ring 1.8s infinite ease-in-out;
-    }
-
-    /* Smooth auto-hide header transition */
-    .control-header-hidden {
-      transform: translateY(-90%);
+    /* Auto-hide floating control bar */
+    .header-docked {
+      transform: translate(-50%, -85%);
       opacity: 0.15;
     }
-    .control-header-hidden:hover {
-      transform: translateY(0);
+    .header-docked:hover {
+      transform: translate(-50%, 0);
       opacity: 1;
     }
 
-    /* Custom range slider styling */
+    /* Highlight current sentence during speech tracking */
+    .speech-highlight {
+      background: linear-gradient(120deg, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.35));
+      border-radius: 8px;
+      padding: 2px 8px;
+      box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+      transition: all 0.25s ease-out;
+    }
+
+    /* Range slider custom styling */
     input[type=range] {
       accent-color: #6366f1;
     }
-    
-    /* Highlighted spoken sentence */
-    .spoken-active {
-      background-color: rgba(99, 102, 241, 0.25);
-      border-radius: 6px;
-      transition: background-color 0.3s ease;
-    }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen selection:bg-indigo-500 selection:text-white antialiased overflow-x-hidden">
+<body class="bg-[#090a0f] text-slate-100 font-sans min-h-screen selection:bg-indigo-500 selection:text-white antialiased overflow-x-hidden">
 
   <!-- ============================================================== -->
-  <!-- 1. EDITOR SCREEN (Màn hình Soạn Thảo & Cài Đặt Ban Đầu) -->
+  <!-- 1. EDITOR SCREEN (Màn hình Soạn Thảo & Cài Đặt) -->
   <!-- ============================================================== -->
   <div id="editorScreen" class="min-h-screen flex flex-col justify-between p-4 md:p-8 max-w-6xl mx-auto transition-opacity duration-300">
-    <!-- Top Navigation / Brand Header -->
-    <header class="flex items-center justify-between pb-6 border-b border-slate-800">
-      <div class="flex items-center space-x-3">
-        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
+    <!-- Top Brand Header -->
+    <header class="flex items-center justify-between pb-6 border-b border-slate-800/80">
+      <div class="flex items-center space-x-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 text-white ring-1 ring-white/20">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
           </svg>
         </div>
         <div>
           <div class="flex items-center space-x-2">
-            <h1 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
-              Teleprompter Pro
+            <h1 class="text-xl md:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
+              CuePrompter Pro
             </h1>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium border border-indigo-500/30">v2.0</span>
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">Ultra 120Hz</span>
           </div>
-          <p class="text-xs text-slate-400">Máy nhắc chữ chuyên nghiệp cho quay video, thuyết trình & podcast</p>
+          <p class="text-xs text-slate-400">Máy nhắc chữ cuộn mượt 60-144fps • Hỗ trợ AI nhận diện giọng nói tiếng Việt</p>
         </div>
       </div>
 
       <!-- Action buttons -->
-      <div class="flex items-center space-x-2">
-        <button id="btnShortcutsHelp" title="Xem danh sách phím tắt" class="px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs md:text-sm font-medium flex items-center space-x-1.5 border border-slate-700 transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="flex items-center space-x-2.5">
+        <button id="btnShortcutsHelp" class="px-3.5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-slate-300 text-xs md:text-sm font-semibold flex items-center space-x-1.5 border border-slate-700 transition">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
           </svg>
           <span class="hidden sm:inline">Phím tắt</span>
         </button>
 
-        <button id="btnStartPrompter" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm md:text-base shadow-lg shadow-indigo-600/30 flex items-center space-x-2 transition transform active:scale-95">
+        <button id="btnStartPrompter" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-sm md:text-base shadow-xl shadow-indigo-600/35 flex items-center space-x-2 transition-all transform active:scale-95">
           <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z"/>
           </svg>
-          <span>Bắt đầu nhắc chữ</span>
+          <span>BẮT ĐẦU NHẮC CHỮ</span>
         </button>
       </div>
     </header>
@@ -165,112 +163,135 @@
       <div class="lg:col-span-3 flex flex-col space-y-3">
         <div class="flex flex-wrap items-center justify-between text-xs text-slate-400 gap-2">
           <div class="flex items-center space-x-4">
-            <span class="flex items-center space-x-1 text-slate-300">
+            <span class="flex items-center space-x-1.5 text-slate-300 bg-slate-800/60 px-3 py-1 rounded-lg border border-slate-700/50">
               <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               <span>Số từ: <strong id="editorWordCount" class="text-indigo-400 font-bold">0</strong> từ</span>
             </span>
-            <span class="flex items-center space-x-1 text-slate-300">
+            <span class="flex items-center space-x-1.5 text-slate-300 bg-slate-800/60 px-3 py-1 rounded-lg border border-slate-700/50">
               <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               <span>Thời lượng ước tính: <strong id="editorEstTime" class="text-emerald-400 font-bold">00:00</strong> (~140 từ/phút)</span>
             </span>
           </div>
 
-          <!-- Quick Templates & Actions -->
-          <div class="flex items-center space-x-2">
-            <button id="btnLoadSample" class="hover:text-indigo-300 hover:underline transition">Nạp bài mẫu</button>
-            <span>•</span>
-            <button id="btnClearScript" class="hover:text-red-400 hover:underline transition">Xóa trắng</button>
-            <span>•</span>
-            <span id="saveStatus" class="text-slate-500 italic">Đã tự động lưu</span>
+          <!-- Actions -->
+          <div class="flex items-center space-x-2.5">
+            <button id="btnLoadSample" class="text-indigo-400 hover:text-indigo-300 font-medium hover:underline transition">Nạp bài mẫu</button>
+            <span class="text-slate-600">•</span>
+            <button id="btnClearScript" class="text-rose-400 hover:text-rose-300 font-medium hover:underline transition">Xóa trắng</button>
+            <span class="text-slate-600">•</span>
+            <span id="saveStatus" class="text-slate-500 italic text-[11px]">Đã tự động lưu</span>
           </div>
         </div>
 
         <div class="relative">
-          <textarea id="scriptInput" rows="18" placeholder="Nhập hoặc dán kịch bản của bạn vào đây...&#10;&#10;Mẹo: Ngắt dòng thành các câu ngắn để dễ đọc hơn khi quay video hoặc thuyết trình!" class="w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-y font-prompter text-lg leading-relaxed shadow-inner"></textarea>
+          <textarea id="scriptInput" rows="18" placeholder="Nhập hoặc dán kịch bản của bạn vào đây...&#10;&#10;Mẹo: Ngắt thành các câu vừa phải để dễ theo dõi hơn khi đứng trước ống kính camera!" class="w-full bg-[#11131a] border border-slate-800 rounded-2xl p-6 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/80 focus:border-transparent transition resize-y font-prompter text-lg leading-relaxed shadow-inner"></textarea>
         </div>
       </div>
 
       <!-- Quick Settings Sidebar (Col 1/4) -->
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 space-y-5">
-        <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center space-x-2">
+      <div class="bg-[#11131a] border border-slate-800 rounded-2xl p-5 space-y-5 shadow-lg">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-2">
           <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
           </svg>
-          <span>Thiết lập sẵn</span>
+          <span>Thiết lập phát</span>
         </h3>
 
-        <!-- Speed Preset -->
+        <!-- Mode selector: Speed Mode vs Smart Voice Mode -->
         <div>
-          <div class="flex justify-between text-xs font-medium mb-1">
-            <span class="text-slate-300">Tốc độ cuộn mặc định</span>
-            <span id="editorSpeedVal" class="text-indigo-400 font-bold">120</span>
+          <span class="text-xs font-semibold text-slate-300 block mb-2">Chế độ vận hành</span>
+          <div class="grid grid-cols-2 gap-2 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+            <button type="button" id="tabModeSpeed" class="py-2 px-2 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span>Cuộn đều</span>
+            </button>
+            <button type="button" id="tabModeVoice" class="py-2 px-2 rounded-lg text-slate-400 hover:text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+              <span>Theo giọng nói</span>
+            </button>
           </div>
-          <input type="range" id="editorSpeedSlider" min="1" max="1000" value="120" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer">
-          <div class="flex justify-between text-[10px] text-slate-500 mt-0.5">
-            <span>Rất chậm (1)</span>
-            <span>Vừa (100-200)</span>
-            <span>Nhanh (1000)</span>
+        </div>
+
+        <!-- Speed Preset (Level 1 to 10 with granular steps) -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+            <span class="text-slate-300">Tốc độ cuộn</span>
+            <span class="text-indigo-400 font-mono font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+              Mức <span id="editorSpeedVal">3.5</span> (~<span id="editorSpeedWpm">140</span> wpm)
+            </span>
+          </div>
+          <input type="range" id="editorSpeedSlider" min="0.5" max="10" step="0.5" value="3.5" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+            <span>0.5 (Chậm)</span>
+            <span>3.5 (Chuẩn)</span>
+            <span>10 (Cực nhanh)</span>
           </div>
         </div>
 
         <!-- Font Size Preset -->
         <div>
-          <div class="flex justify-between text-xs font-medium mb-1">
+          <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
             <span class="text-slate-300">Cỡ chữ hiển thị</span>
-            <span id="editorFontSizeVal" class="text-indigo-400 font-bold">42px</span>
+            <span id="editorFontSizeVal" class="text-indigo-400 font-mono font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">48px</span>
           </div>
-          <input type="range" id="editorFontSizeSlider" min="18" max="96" value="42" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer">
-          <div class="flex justify-between text-[10px] text-slate-500 mt-0.5">
-            <span>18px</span>
-            <span>42px</span>
+          <input type="range" id="editorFontSizeSlider" min="20" max="96" step="2" value="48" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+            <span>20px</span>
+            <span>48px</span>
             <span>96px</span>
           </div>
         </div>
 
+        <!-- Line Height -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+            <span class="text-slate-300">Khoảng cách dòng</span>
+            <span id="editorLineHeightVal" class="text-indigo-400 font-mono font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">1.7x</span>
+          </div>
+          <input type="range" id="editorLineHeightSlider" min="1.3" max="2.4" step="0.1" value="1.7" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+        </div>
+
         <!-- Text Align -->
         <div>
-          <span class="text-xs font-medium text-slate-300 block mb-1.5">Căn lề chữ</span>
+          <span class="text-xs font-semibold text-slate-300 block mb-1.5">Căn lề chữ</span>
           <div class="grid grid-cols-2 gap-2">
-            <button type="button" data-align="left" class="btn-align py-1.5 px-3 rounded-lg bg-slate-700/60 hover:bg-slate-700 text-xs font-medium text-slate-200 flex items-center justify-center space-x-1 border border-transparent transition">
+            <button type="button" data-align="left" class="btn-align py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 flex items-center justify-center space-x-1.5 border border-slate-700/60 transition">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h14"/></svg>
               <span>Căn trái</span>
             </button>
-            <button type="button" data-align="center" class="btn-align active py-1.5 px-3 rounded-lg bg-indigo-600 text-xs font-medium text-white flex items-center justify-center space-x-1 border border-indigo-500 transition">
+            <button type="button" data-align="center" class="btn-align active py-2 px-3 rounded-lg bg-indigo-600 text-xs font-bold text-white flex items-center justify-center space-x-1.5 border border-indigo-500 transition">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M7 12h10M5 18h14"/></svg>
               <span>Căn giữa</span>
             </button>
           </div>
         </div>
 
-        <!-- Max width of text container -->
-        <div>
-          <span class="text-xs font-medium text-slate-300 block mb-1.5">Độ rộng khung đọc</span>
-          <select id="editorContainerWidth" class="w-full bg-slate-700/80 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-            <option value="max-w-2xl">Hẹp (max-w-2xl) - Ít đảo mắt nhất</option>
-            <option value="max-w-4xl" selected>Chuẩn (max-w-4xl) - Cân đối</option>
-            <option value="max-w-6xl">Rộng (max-w-6xl) - Màn hình lớn</option>
-            <option value="max-w-full">Toàn chiều rộng</option>
-          </select>
+        <!-- Countdown toggle -->
+        <div class="pt-2 border-t border-slate-800">
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-xs font-semibold text-slate-300">Đếm ngược 3 giây trước khi chạy</span>
+            <input type="checkbox" id="editorCountdownToggle" checked class="w-4 h-4 text-indigo-600 rounded bg-slate-800 border-slate-700 focus:ring-indigo-500">
+          </label>
         </div>
 
         <!-- Eye-line Guide Toggle -->
-        <div class="pt-2 border-t border-slate-700/60">
+        <div class="pt-2 border-t border-slate-800">
           <label class="flex items-center justify-between cursor-pointer">
-            <span class="text-xs font-medium text-slate-300">Vạch tiêu điểm (Eye-line)</span>
-            <input type="checkbox" id="editorEyelineToggle" checked class="w-4 h-4 text-indigo-600 rounded bg-slate-700 border-slate-600 focus:ring-indigo-500">
+            <span class="text-xs font-semibold text-slate-300">Vạch tiêu điểm (Eye-line Marker)</span>
+            <input type="checkbox" id="editorEyelineToggle" checked class="w-4 h-4 text-indigo-600 rounded bg-slate-800 border-slate-700 focus:ring-indigo-500">
           </label>
         </div>
 
         <!-- Mirror Flip defaults -->
-        <div class="space-y-1.5 pt-2 border-t border-slate-700/60">
-          <span class="text-xs font-medium text-slate-300 block">Lật gương (Cho kính quang học)</span>
+        <div class="space-y-2 pt-2 border-t border-slate-800">
+          <span class="text-xs font-semibold text-slate-300 block">Lật gương (Cho kính quang học)</span>
           <div class="grid grid-cols-2 gap-2">
-            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer p-1.5 rounded bg-slate-700/40 hover:bg-slate-700/70 transition">
+            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer p-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 transition border border-slate-700/50">
               <input type="checkbox" id="editorFlipX" class="w-3.5 h-3.5 text-indigo-600 rounded bg-slate-700 border-slate-600">
               <span>Lật ngang (X)</span>
             </label>
-            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer p-1.5 rounded bg-slate-700/40 hover:bg-slate-700/70 transition">
+            <label class="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer p-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 transition border border-slate-700/50">
               <input type="checkbox" id="editorFlipY" class="w-3.5 h-3.5 text-indigo-600 rounded bg-slate-700 border-slate-600">
               <span>Lật dọc (Y)</span>
             </label>
@@ -280,131 +301,123 @@
     </main>
 
     <!-- Footer -->
-    <footer class="pt-4 border-t border-slate-800 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
-      <p>Teleprompter Pro • Mã nguồn mở tối ưu cho người sáng tạo nội dung</p>
+    <footer class="pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p>CuePrompter Pro • Cuộn chữ mượt như CuePrompter với công nghệ GPU Transform</p>
       <p class="flex items-center space-x-2">
-        <span>Nhấn <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">Space</kbd> để chạy/dừng</span>
+        <span>Nhấn <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">Space</kbd> để chạy / dừng</span>
       </p>
     </footer>
   </div>
 
 
   <!-- ============================================================== -->
-  <!-- 2. PROMPTER SCREEN (Màn hình Nhắc Chữ Chính) -->
+  <!-- 2. PROMPTER SCREEN (Màn hình Nhắc Chữ GPU Hardware Accelerated) -->
   <!-- ============================================================== -->
-  <div id="prompterScreen" class="hidden min-h-screen relative overflow-hidden bg-black text-white select-none">
+  <div id="prompterScreen" class="hidden fixed inset-0 z-40 bg-black text-white select-none overflow-hidden">
 
-    <!-- FLOATING CONTROL BAR (Cố định phía trên, tự động mờ khi không rê chuột) -->
-    <header id="controlHeader" class="fixed top-2 left-1/2 transform -translate-x-1/2 z-50 w-[96%] max-w-6xl transition-all duration-300 ease-in-out">
-      <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/70 rounded-2xl shadow-2xl p-2.5 md:p-3 flex flex-wrap items-center justify-between gap-3 text-slate-200">
+    <!-- FLOATING TOP CONTROL BAR (CuePrompter Sleek Style) -->
+    <header id="controlHeader" class="fixed top-3 left-1/2 transform -translate-x-1/2 z-50 w-[96%] max-w-5xl transition-all duration-300 ease-in-out">
+      <div class="bg-[#12141c]/95 backdrop-blur-xl border border-slate-700/80 rounded-2xl shadow-2xl p-2.5 md:p-3 flex flex-wrap items-center justify-between gap-2.5 text-slate-200 ring-1 ring-white/10">
         
-        <!-- Left group: Back & Play/Pause & Reset -->
+        <!-- Left group: Back, Play/Pause, Reverse/Forward Jump, Reset -->
         <div class="flex items-center space-x-2">
           <!-- Back to editor -->
-          <button id="btnBackToEditor" title="Quay lại soạn thảo (Esc)" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" aria-label="Quay lại">
+          <button id="btnBackToEditor" title="Quay lại kịch bản (Esc)" class="p-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white transition">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
           </button>
 
           <!-- Main Play / Pause Button -->
-          <button id="btnPlayPause" title="Phát / Tạm dừng (Space)" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center space-x-2 shadow-lg shadow-emerald-600/30 transition transform active:scale-95">
+          <button id="btnPlayPause" title="Phát / Tạm dừng (Space)" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold flex items-center space-x-2 shadow-lg shadow-emerald-600/35 transition transform active:scale-95">
             <span id="playPauseIcon">
-              <!-- Play icon -->
               <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             </span>
-            <span id="playPauseText" class="text-sm font-semibold tracking-wide">PHÁT</span>
+            <span id="playPauseText" class="text-sm tracking-wider">PHÁT</span>
           </button>
 
-          <!-- Reset scroll button -->
-          <button id="btnResetScroll" title="Cuộn về đầu trang (R)" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" aria-label="Về đầu trang">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <!-- Jump Back 5s -->
+          <button id="btnJumpBack" title="Tua ngược 5s (←)" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition hidden sm:inline-flex">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/></svg>
+          </button>
+
+          <!-- Jump Forward 5s -->
+          <button id="btnJumpForward" title="Tua xuôi 5s (→)" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition hidden sm:inline-flex">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.934 12.8a1 1 0 000-1.6l-5.334-4A1 1 0 005 8v8a1 1 0 001.6.8l5.334-4zM19.934 12.8a1 1 0 000-1.6l-5.334-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.334-4z"/></svg>
+          </button>
+
+          <!-- Reset scroll to top -->
+          <button id="btnResetScroll" title="Về đầu trang (R)" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
           </button>
 
-          <!-- Reading Timer & Reset -->
-          <div class="hidden sm:flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 font-mono text-xs">
+          <!-- Reading Stopwatch -->
+          <div class="hidden lg:flex items-center space-x-1 px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 font-mono text-xs">
             <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span id="prompterTimer" class="font-bold tracking-wider text-indigo-300">00:00</span>
-            <button id="btnResetTimer" title="Đặt lại đồng hồ" class="ml-1 text-slate-400 hover:text-white">✕</button>
           </div>
         </div>
 
-        <!-- Center group: Speed & Font Size Controls -->
-        <div class="flex items-center space-x-3 md:space-x-4">
-          <!-- Speed control -->
+        <!-- Center group: Speed & Font Controls -->
+        <div class="flex items-center space-x-2 md:space-x-3">
+          <!-- Speed Control -->
           <div class="flex items-center space-x-1.5 bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-700/60">
             <span class="text-xs text-slate-400 font-medium hidden md:inline">Tốc độ:</span>
-            <button id="btnSpeedDown" title="Giảm tốc độ (↓)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition">-</button>
-            <input type="number" id="prompterSpeedNum" min="1" max="1000" value="120" class="w-14 bg-slate-900 border border-slate-700 rounded-lg text-center text-xs font-bold text-indigo-400 py-0.5 focus:outline-none">
-            <button id="btnSpeedUp" title="Tăng tốc độ (↑)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition">+</button>
-            <input type="range" id="prompterSpeedSlider" min="1" max="1000" value="120" class="w-16 md:w-24 h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+            <button id="btnSpeedDown" title="Giảm tốc độ (↓)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">-</button>
+            <span id="prompterSpeedDisplay" class="font-mono text-xs font-bold text-indigo-400 min-w-[34px] text-center">3.5</span>
+            <button id="btnSpeedUp" title="Tăng tốc độ (↑)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">+</button>
+            <input type="range" id="prompterSpeedSlider" min="0.5" max="10" step="0.5" value="3.5" class="w-16 md:w-20 h-1.5 bg-slate-700 rounded cursor-pointer">
           </div>
 
-          <!-- Font size control -->
-          <div class="flex items-center space-x-1.5 bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-700/60">
+          <!-- Font Size Control -->
+          <div class="flex items-center space-x-1 bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-700/60">
             <span class="text-xs text-slate-400 font-medium hidden md:inline">Cỡ:</span>
-            <button id="btnFontDown" title="Thu nhỏ chữ" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition">A-</button>
-            <span id="prompterFontSizeText" class="text-xs font-bold text-slate-200 min-w-[32px] text-center">42</span>
-            <button id="btnFontUp" title="Phóng to chữ" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition">A+</button>
+            <button id="btnFontDown" title="Giảm cỡ chữ" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">A-</button>
+            <span id="prompterFontSizeDisplay" class="font-mono text-xs font-bold text-slate-200 min-w-[28px] text-center">48</span>
+            <button id="btnFontUp" title="Tăng cỡ chữ" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">A+</button>
           </div>
         </div>
 
-        <!-- Right group: Mirror, Voice, Theme, Fullscreen -->
-        <div class="flex items-center space-x-1.5 md:space-x-2">
+        <!-- Right group: Voice Tracking, Mirror, Theme, Fullscreen -->
+        <div class="flex items-center space-x-1.5">
+          <!-- Voice Recognition Button -->
+          <button id="btnVoiceToggle" title="Bật/Tắt theo dõi giọng nói tiếng Việt" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center space-x-1.5 border border-slate-700 transition">
+            <div id="micIndicator" class="w-2.5 h-2.5 rounded-full bg-slate-500"></div>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+            </svg>
+            <span class="hidden xl:inline text-xs">Giọng nói</span>
+          </button>
+
           <!-- Flip Horizontal (X) -->
-          <button id="btnFlipX" title="Lật gương ngang (Flip X)" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition" aria-label="Lật ngang">
+          <button id="btnFlipX" title="Lật gương ngang (Flip X)" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
             </svg>
           </button>
 
           <!-- Flip Vertical (Y) -->
-          <button id="btnFlipY" title="Lật gương dọc (Flip Y)" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition" aria-label="Lật dọc">
+          <button id="btnFlipY" title="Lật gương dọc (Flip Y)" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
             <svg class="w-4 h-4 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
             </svg>
           </button>
 
-          <!-- Voice Recognition Tracking Toggle -->
-          <button id="btnVoiceTrack" title="Theo dõi giọng nói tiếng Việt (Web Speech API)" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium flex items-center space-x-1.5 border border-slate-700 transition">
-            <div id="micIconStatus" class="w-2.5 h-2.5 rounded-full bg-slate-500"></div>
+          <!-- Theme switcher -->
+          <button id="btnToggleTheme" title="Đổi màu nền (Tối / Sáng / Kem)" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
             </svg>
-            <span class="hidden lg:inline text-xs">Giọng nói</span>
           </button>
 
-          <!-- Theme Toggle (Dark / Light / Sepia) -->
-          <div class="relative inline-block text-left">
-            <button id="btnThemeMenu" title="Đổi màu giao diện" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4 3.5 3.5 0 017 0 4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
-              </svg>
-            </button>
-            <div id="themeDropdown" class="hidden absolute right-0 mt-2 w-32 rounded-xl bg-slate-800 border border-slate-700 shadow-xl py-1 z-50 text-xs">
-              <button data-theme="dark" class="btn-theme-item w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-2 text-white">
-                <span class="w-3 h-3 rounded-full bg-black border border-slate-600"></span>
-                <span>Nền Tối</span>
-              </button>
-              <button data-theme="light" class="btn-theme-item w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-2 text-slate-300">
-                <span class="w-3 h-3 rounded-full bg-white border border-slate-300"></span>
-                <span>Nền Sáng</span>
-              </button>
-              <button data-theme="sepia" class="btn-theme-item w-full text-left px-3 py-1.5 hover:bg-slate-700 flex items-center space-x-2 text-slate-300">
-                <span class="w-3 h-3 rounded-full bg-amber-100 border border-amber-300"></span>
-                <span>Màu Kem</span>
-              </button>
-            </div>
-          </div>
-
           <!-- Fullscreen Toggle -->
-          <button id="btnFullscreen" title="Toàn màn hình (F)" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition" aria-label="Toàn màn hình">
-            <svg id="fullscreenIconExpand" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button id="btnFullscreen" title="Toàn màn hình (F)" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+            <svg id="fsExpandIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
             </svg>
-            <svg id="fullscreenIconCompress" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg id="fsCompressIcon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
@@ -412,41 +425,57 @@
       </div>
     </header>
 
-    <!-- EYE-LINE READING FOCUS INDICATOR (Dải mờ / mũi tên căn góc nhìn ở 30% màn hình) -->
-    <div id="eyelineGuide" class="eyeline-guide flex items-center justify-between px-6">
+    <!-- EYE-LINE FOCUS GUIDE (Vạch tiêu điểm ở vị trí 30% màn hình) -->
+    <div id="eyelineMarker" class="pointer-events-none fixed top-[30%] left-0 right-0 h-24 -translate-y-1/2 z-30 flex items-center justify-between px-6 transition-opacity duration-300">
       <!-- Left indicator arrow -->
-      <div class="flex items-center space-x-2 text-indigo-400 opacity-80 drop-shadow">
-        <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24">
-          <path d="M5 12l9-7v14l-9-7z"/>
-        </svg>
-        <div class="h-0.5 w-12 bg-indigo-500/60 rounded"></div>
+      <div class="flex items-center space-x-2 text-indigo-400 opacity-90 drop-shadow-[0_0_12px_rgba(99,102,241,0.6)]">
+        <svg class="w-9 h-9 fill-current" viewBox="0 0 24 24"><path d="M5 12l9-7v14l-9-7z"/></svg>
+        <div class="h-0.5 w-16 bg-gradient-to-r from-indigo-500 to-transparent"></div>
       </div>
 
-      <!-- Center transparent focal area with subtle boundary -->
-      <div class="flex-1 mx-4 h-full border-y border-dashed border-indigo-400/20 bg-indigo-500/5 rounded-xl pointer-events-none"></div>
+      <!-- Center eye-line frame with subtle boundary -->
+      <div class="flex-1 mx-4 h-full border-y border-dashed border-indigo-400/25 bg-indigo-500/[0.03] rounded-2xl pointer-events-none"></div>
 
       <!-- Right indicator arrow -->
-      <div class="flex items-center space-x-2 text-indigo-400 opacity-80 drop-shadow">
-        <div class="h-0.5 w-12 bg-indigo-500/60 rounded"></div>
-        <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24">
-          <path d="M19 12l-9-7v14l9-7z"/>
-        </svg>
+      <div class="flex items-center space-x-2 text-indigo-400 opacity-90 drop-shadow-[0_0_12px_rgba(99,102,241,0.6)]">
+        <div class="h-0.5 w-16 bg-gradient-to-l from-indigo-500 to-transparent"></div>
+        <svg class="w-9 h-9 fill-current" viewBox="0 0 24 24"><path d="M19 12l-9-7v14l9-7z"/></svg>
       </div>
     </div>
 
-    <!-- VOICE STATUS TOAST NOTIFICATION -->
-    <div id="voiceStatusBadge" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-slate-900/95 border border-indigo-500/40 text-xs font-medium text-indigo-200 shadow-2xl flex items-center space-x-2 backdrop-blur">
-      <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
-      <span id="voiceStatusText">Đang lắng nghe giọng nói...</span>
+    <!-- CINEMATIC VIGNETTE TOP & BOTTOM FADES -->
+    <div class="pointer-events-none absolute top-0 left-0 right-0 h-[22vh] bg-gradient-to-b from-black via-black/80 to-transparent z-20"></div>
+    <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-[22vh] bg-gradient-to-t from-black via-black/80 to-transparent z-20"></div>
+
+    <!-- COUNTDOWN OVERLAY (3.. 2.. 1.. GO!) -->
+    <div id="countdownOverlay" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center">
+      <div id="countdownNumber" class="text-9xl md:text-[14rem] font-black text-indigo-400 drop-shadow-[0_0_50px_rgba(99,102,241,0.8)] animate-count-pop">
+        3
+      </div>
+      <p class="text-sm md:text-base text-slate-300 mt-4 tracking-widest uppercase font-semibold">Chuẩn bị ghi hình...</p>
+      <button id="btnSkipCountdown" class="mt-8 px-4 py-1.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-400 border border-slate-700">
+        Bỏ qua đếm ngược (Space)
+      </button>
     </div>
 
-    <!-- SCROLLABLE TEXT PROMPTER CONTAINER -->
-    <div id="prompterScrollArea" class="w-full h-screen overflow-y-scroll overflow-x-hidden scroll-smooth">
-      <div id="prompterFlipWrapper" class="min-h-full transition-transform duration-300">
-        <!-- Text viewport wrapper with customizable max-width -->
-        <div id="prompterWidthContainer" class="max-w-4xl mx-auto px-6 md:px-12 pt-[35vh] pb-[60vh]">
-          <div id="prompterDisplayContent" class="font-prompter text-center leading-[1.65] font-semibold tracking-wide whitespace-pre-wrap transition-all">
-            <!-- Script text will be dynamically inserted here -->
+    <!-- VOICE STATUS TOAST -->
+    <div id="voiceToast" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-slate-900/95 border border-indigo-500/50 text-xs font-semibold text-indigo-200 shadow-2xl flex items-center space-x-2.5 backdrop-blur-md">
+      <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
+      <span id="voiceToastText">Đang nghe giọng nói...</span>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- GPU ACCELERATED VIEWPORT & SCROLL CANVAS -->
+    <!-- ============================================================== -->
+    <div id="prompterViewport" class="w-full h-full cursor-grab active:cursor-grabbing overflow-hidden">
+      <!-- Mirror Flip Wrapper -->
+      <div id="prompterMirrorWrapper" class="w-full h-full transition-transform duration-200">
+        <!-- Hardware Accelerated Scrolling Layer (translate3d) -->
+        <div id="prompterGpuLayer" class="gpu-scroll-layer w-full min-h-full">
+          <div id="prompterContainer" class="max-w-4xl mx-auto px-6 md:px-14 pt-[30vh] pb-[70vh]">
+            <div id="prompterTextCanvas" class="font-prompter font-bold tracking-wide transition-all whitespace-pre-wrap">
+              <!-- Script text elements rendered here -->
+            </div>
           </div>
         </div>
       </div>
@@ -457,116 +486,120 @@
   <!-- ============================================================== -->
   <!-- 3. SHORTCUTS HELP MODAL -->
   <!-- ============================================================== -->
-  <div id="shortcutsModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+  <div id="shortcutsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#12141c] border border-slate-700/80 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
-          <span>⌨️ Bảng Phím Tắt Tiện Dụng</span>
+        <h3 class="text-base font-bold text-white flex items-center space-x-2">
+          <span>⌨️ Phím Tắt Điều Khiển Chuyên Nghiệp</span>
         </h3>
-        <button id="btnCloseModal" class="text-slate-400 hover:text-white text-xl">✕</button>
+        <button id="btnCloseModal" class="text-slate-400 hover:text-white text-lg">✕</button>
       </div>
 
-      <div class="space-y-2.5 text-sm">
+      <div class="space-y-2.5 text-xs md:text-sm">
         <div class="flex justify-between items-center py-1">
-          <span class="text-slate-300">Phát / Tạm dừng cuộn</span>
-          <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono text-xs font-bold">Space</kbd>
+          <span class="text-slate-300">Phát / Tạm dừng</span>
+          <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono font-bold">Space</kbd>
         </div>
         <div class="flex justify-between items-center py-1">
           <span class="text-slate-300">Tăng / Giảm tốc độ</span>
           <div class="space-x-1">
-            <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono text-xs font-bold">↑</kbd>
-            <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono text-xs font-bold">↓</kbd>
+            <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono font-bold">↑</kbd>
+            <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono font-bold">↓</kbd>
           </div>
         </div>
         <div class="flex justify-between items-center py-1">
-          <span class="text-slate-300">Tua nhanh lên / xuống</span>
+          <span class="text-slate-300">Tua nhanh lên / xuống 5s</span>
           <div class="space-x-1">
-            <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono text-xs font-bold">←</kbd>
-            <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono text-xs font-bold">→</kbd>
+            <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono font-bold">←</kbd>
+            <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono font-bold">→</kbd>
           </div>
         </div>
         <div class="flex justify-between items-center py-1">
           <span class="text-slate-300">Cuộn về đầu trang</span>
-          <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono text-xs font-bold">R</kbd>
+          <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono font-bold">R</kbd>
         </div>
         <div class="flex justify-between items-center py-1">
           <span class="text-slate-300">Bật / Tắt Toàn màn hình</span>
-          <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono text-xs font-bold">F</kbd>
+          <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono font-bold">F</kbd>
         </div>
         <div class="flex justify-between items-center py-1">
-          <span class="text-slate-300">Thoát về chế độ soạn thảo</span>
-          <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono text-xs font-bold">Esc</kbd>
+          <span class="text-slate-300">Thoát về soạn thảo kịch bản</span>
+          <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono font-bold">Esc</kbd>
         </div>
       </div>
 
       <div class="pt-3 border-t border-slate-800 text-right">
-        <button id="btnCloseModalBtn" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition">Đã hiểu</button>
+        <button id="btnCloseModalBtn" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition">Đóng</button>
       </div>
     </div>
   </div>
 
 
   <!-- ============================================================== -->
-  <!-- 4. CORE JAVASCRIPT APPLICATION LOGIC -->
+  <!-- 4. CORE ENGINE JAVASCRIPT (GPU COMPOSITOR + VOICE TRACKING) -->
   <!-- ============================================================== -->
   <script>
     /**
-     * Teleprompter Pro Core Application State & Controller
+     * CuePrompter Pro - Ultra-Smooth GPU Transform Teleprompter Engine
      */
-    const AppState = {
-      // Configuration & Settings
-      speed: 120, // Value 1 - 1000 (pixels scrolled per second calculated via delta time)
-      fontSize: 42, // In pixels (18 to 96)
-      align: 'center', // 'left' or 'center'
-      containerWidth: 'max-w-4xl',
+    const App = {
+      // Configuration
+      speedLevel: 3.5, // Levels from 0.5 to 10.0 (Step 0.5)
+      fontSize: 48,    // 20px to 96px
+      lineHeight: 1.7, // 1.3 to 2.4
+      textAlign: 'center',
+      theme: 'dark',   // 'dark', 'light', 'sepia'
       flipX: false,
       flipY: false,
-      theme: 'dark', // 'dark', 'light', 'sepia'
       showEyeline: true,
+      useCountdown: true,
+      mode: 'speed',   // 'speed' or 'voice'
 
-      // Playback State
+      // Motion State
       isPlaying: false,
       isPrompterActive: false,
-      lastTimestamp: 0,
-      scrollAccumulator: 0, // Fractional pixel accumulator for sub-pixel accuracy
-      animationFrameId: null,
+      currentY: 0,     // GPU translate3d Y position in pixels (Float)
+      maxY: 0,         // Maximum scroll bound
+      rafId: null,
+      lastFrameTime: 0,
 
-      // Timer State
+      // Stopwatch
       timerSeconds: 0,
-      timerIntervalId: null,
+      timerInterval: null,
 
-      // Voice recognition state
-      isVoiceTracking: false,
-      recognitionInstance: null,
-      sentencesList: [],
+      // Countdown State
+      countdownInterval: null,
+      isCountingDown: false,
+
+      // Voice recognition
+      recognition: null,
+      isVoiceActive: false,
+      speechItems: [],
 
       // Script
       scriptText: ''
     };
 
-    // Default Sample Script
-    const SAMPLE_SCRIPT = `Chào mừng quý vị và các bạn đang theo dõi chương trình ngày hôm nay!
+    const SAMPLE_SCRIPT = `Chào mừng quý vị và các bạn đang theo dõi chương trình!
 
-Tôi rất vui mừng được chia sẻ với các bạn một giải pháp công nghệ hoàn toàn mới: Ứng dụng Máy Nhắc Chữ Trực Tuyến - Teleprompter Pro.
+Tôi rất vui mừng được chia sẻ với các bạn giải pháp máy nhắc chữ trực tuyến thế hệ mới: CuePrompter Pro.
 
-Khi quay video hoặc thuyết trình trước đám đông, việc ghi nhớ toàn bộ kịch bản là một thử thách rất lớn. Với ứng dụng này, bạn có thể:
+Khi quay video hoặc thuyết trình trước máy quay, việc đảo mắt hoặc quên kịch bản luôn là nỗi ám ảnh lớn nhất. Với phiên bản cải tiến này:
 
-Thứ nhất: Tự do điều chỉnh tốc độ cuộn chữ siêu mượt, không bao giờ bị giật khung hình nhờ công nghệ requestAnimationFrame.
+Thứ nhất: Tốc độ cuộn chữ đạt độ mượt tuyệt đối 60-144fps nhờ công nghệ GPU Transform translate3d, loại bỏ hoàn toàn hiện tượng khựng giật của thanh cuộn trình duyệt truyền thống.
 
-Thứ hai: Dễ dàng phóng to thu nhỏ cỡ chữ theo khoảng cách mắt, hỗ trợ lật gương quang học hai chiều cho các thiết bị kính chuyên nghiệp.
+Thứ hai: Bạn có thể dùng chuột lăn (Scroll Wheel) hoặc vuốt cảm ứng để tua kịch bản nhanh chóng mà không làm mất nhịp đọc.
 
-Thứ ba: Tích hợp công nghệ nhận diện giọng nói tiếng Việt, thông minh tự động cuộn chữ theo từng câu bạn đang phát âm.
+Thứ ba: Chế độ đếm ngược 3 giây thông minh giúp bạn hít thở sâu và sẵn sàng thần thái tốt nhất trước khi bấm máy ghi hình.
 
-Chúc các bạn có những buổi ghi hình thật tự tin, truyền cảm hứng và đạt hiệu quả cao nhất!`;
+Thứ tư: Chế độ nhận diện giọng nói tiếng Việt tự động căn chỉnh từng câu bạn nói vào đúng vạch tiêu điểm 30% mắt nhìn.
+
+Chúc các bạn có những thước phim và bài thuyết trình chuyên nghiệp, cuốn hút và thành công rực rỡ!`;
 
     // DOM Elements Cache
-    const DOM = {
-      // Screens
+    const UI = {
       editorScreen: document.getElementById('editorScreen'),
       prompterScreen: document.getElementById('prompterScreen'),
-      controlHeader: document.getElementById('controlHeader'),
-
-      // Editor inputs
       scriptInput: document.getElementById('scriptInput'),
       editorWordCount: document.getElementById('editorWordCount'),
       editorEstTime: document.getElementById('editorEstTime'),
@@ -574,915 +607,890 @@ Chúc các bạn có những buổi ghi hình thật tự tin, truyền cảm h�
       btnStartPrompter: document.getElementById('btnStartPrompter'),
       btnLoadSample: document.getElementById('btnLoadSample'),
       btnClearScript: document.getElementById('btnClearScript'),
+
+      // Settings Inputs
+      tabModeSpeed: document.getElementById('tabModeSpeed'),
+      tabModeVoice: document.getElementById('tabModeVoice'),
       editorSpeedSlider: document.getElementById('editorSpeedSlider'),
       editorSpeedVal: document.getElementById('editorSpeedVal'),
+      editorSpeedWpm: document.getElementById('editorSpeedWpm'),
       editorFontSizeSlider: document.getElementById('editorFontSizeSlider'),
       editorFontSizeVal: document.getElementById('editorFontSizeVal'),
-      editorContainerWidth: document.getElementById('editorContainerWidth'),
+      editorLineHeightSlider: document.getElementById('editorLineHeightSlider'),
+      editorLineHeightVal: document.getElementById('editorLineHeightVal'),
+      editorCountdownToggle: document.getElementById('editorCountdownToggle'),
       editorEyelineToggle: document.getElementById('editorEyelineToggle'),
       editorFlipX: document.getElementById('editorFlipX'),
       editorFlipY: document.getElementById('editorFlipY'),
-      alignButtons: document.querySelectorAll('.btn-align'),
+      alignBtns: document.querySelectorAll('.btn-align'),
 
       // Prompter Controls
+      controlHeader: document.getElementById('controlHeader'),
       btnBackToEditor: document.getElementById('btnBackToEditor'),
       btnPlayPause: document.getElementById('btnPlayPause'),
       playPauseIcon: document.getElementById('playPauseIcon'),
       playPauseText: document.getElementById('playPauseText'),
+      btnJumpBack: document.getElementById('btnJumpBack'),
+      btnJumpForward: document.getElementById('btnJumpForward'),
       btnResetScroll: document.getElementById('btnResetScroll'),
       prompterTimer: document.getElementById('prompterTimer'),
-      btnResetTimer: document.getElementById('btnResetTimer'),
       btnSpeedDown: document.getElementById('btnSpeedDown'),
       btnSpeedUp: document.getElementById('btnSpeedUp'),
-      prompterSpeedNum: document.getElementById('prompterSpeedNum'),
+      prompterSpeedDisplay: document.getElementById('prompterSpeedDisplay'),
       prompterSpeedSlider: document.getElementById('prompterSpeedSlider'),
       btnFontDown: document.getElementById('btnFontDown'),
       btnFontUp: document.getElementById('btnFontUp'),
-      prompterFontSizeText: document.getElementById('prompterFontSizeText'),
+      prompterFontSizeDisplay: document.getElementById('prompterFontSizeDisplay'),
+      btnVoiceToggle: document.getElementById('btnVoiceToggle'),
+      micIndicator: document.getElementById('micIndicator'),
       btnFlipX: document.getElementById('btnFlipX'),
       btnFlipY: document.getElementById('btnFlipY'),
-      btnVoiceTrack: document.getElementById('btnVoiceTrack'),
-      micIconStatus: document.getElementById('micIconStatus'),
-      voiceStatusBadge: document.getElementById('voiceStatusBadge'),
-      voiceStatusText: document.getElementById('voiceStatusText'),
-      btnThemeMenu: document.getElementById('btnThemeMenu'),
-      themeDropdown: document.getElementById('themeDropdown'),
-      themeItems: document.querySelectorAll('.btn-theme-item'),
+      btnToggleTheme: document.getElementById('btnToggleTheme'),
       btnFullscreen: document.getElementById('btnFullscreen'),
-      fullscreenIconExpand: document.getElementById('fullscreenIconExpand'),
-      fullscreenIconCompress: document.getElementById('fullscreenIconCompress'),
+      fsExpandIcon: document.getElementById('fsExpandIcon'),
+      fsCompressIcon: document.getElementById('fsCompressIcon'),
 
-      // Prompter Display Area
-      eyelineGuide: document.getElementById('eyelineGuide'),
-      prompterScrollArea: document.getElementById('prompterScrollArea'),
-      prompterFlipWrapper: document.getElementById('prompterFlipWrapper'),
-      prompterWidthContainer: document.getElementById('prompterWidthContainer'),
-      prompterDisplayContent: document.getElementById('prompterDisplayContent'),
+      // Prompter Canvas & Overlays
+      eyelineMarker: document.getElementById('eyelineMarker'),
+      countdownOverlay: document.getElementById('countdownOverlay'),
+      countdownNumber: document.getElementById('countdownNumber'),
+      btnSkipCountdown: document.getElementById('btnSkipCountdown'),
+      voiceToast: document.getElementById('voiceToast'),
+      voiceToastText: document.getElementById('voiceToastText'),
+      prompterViewport: document.getElementById('prompterViewport'),
+      prompterMirrorWrapper: document.getElementById('prompterMirrorWrapper'),
+      prompterGpuLayer: document.getElementById('prompterGpuLayer'),
+      prompterContainer: document.getElementById('prompterContainer'),
+      prompterTextCanvas: document.getElementById('prompterTextCanvas'),
 
       // Modal
       btnShortcutsHelp: document.getElementById('btnShortcutsHelp'),
       shortcutsModal: document.getElementById('shortcutsModal'),
       btnCloseModal: document.getElementById('btnCloseModal'),
-      btnCloseModalBtn: document.getElementById('btnCloseModalBtn'),
+      btnCloseModalBtn: document.getElementById('btnCloseModalBtn')
     };
 
     /* ============================================================== */
-    /* STORAGE MANAGEMENT */
+    /* 1. PERSISTENCE & LOCAL STORAGE */
     /* ============================================================== */
-    function loadSavedState() {
+    function loadSavedData() {
       try {
-        const saved = localStorage.getItem('teleprompter_settings');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          AppState.speed = parsed.speed || 120;
-          AppState.fontSize = parsed.fontSize || 42;
-          AppState.align = parsed.align || 'center';
-          AppState.containerWidth = parsed.containerWidth || 'max-w-4xl';
-          AppState.flipX = !!parsed.flipX;
-          AppState.flipY = !!parsed.flipY;
-          AppState.theme = parsed.theme || 'dark';
-          AppState.showEyeline = parsed.showEyeline !== undefined ? parsed.showEyeline : true;
+        const savedSettings = localStorage.getItem('cueprompter_settings');
+        if (savedSettings) {
+          const parsed = JSON.parse(savedSettings);
+          App.speedLevel = parsed.speedLevel ?? 3.5;
+          App.fontSize = parsed.fontSize ?? 48;
+          App.lineHeight = parsed.lineHeight ?? 1.7;
+          App.textAlign = parsed.textAlign ?? 'center';
+          App.theme = parsed.theme ?? 'dark';
+          App.flipX = !!parsed.flipX;
+          App.flipY = !!parsed.flipY;
+          App.showEyeline = parsed.showEyeline ?? true;
+          App.useCountdown = parsed.useCountdown ?? true;
+          App.mode = parsed.mode ?? 'speed';
         }
 
-        const savedScript = localStorage.getItem('teleprompter_script');
-        if (savedScript !== null) {
-          AppState.scriptText = savedScript;
-        } else {
-          AppState.scriptText = SAMPLE_SCRIPT;
-        }
+        const savedScript = localStorage.getItem('cueprompter_script');
+        App.scriptText = (savedScript !== null && savedScript.trim().length > 0) ? savedScript : SAMPLE_SCRIPT;
       } catch (e) {
-        console.warn('LocalStorage error:', e);
-        AppState.scriptText = SAMPLE_SCRIPT;
+        App.scriptText = SAMPLE_SCRIPT;
       }
     }
 
-    function saveState() {
+    function saveSettings() {
       try {
         const toSave = {
-          speed: AppState.speed,
-          fontSize: AppState.fontSize,
-          align: AppState.align,
-          containerWidth: AppState.containerWidth,
-          flipX: AppState.flipX,
-          flipY: AppState.flipY,
-          theme: AppState.theme,
-          showEyeline: AppState.showEyeline
+          speedLevel: App.speedLevel,
+          fontSize: App.fontSize,
+          lineHeight: App.lineHeight,
+          textAlign: App.textAlign,
+          theme: App.theme,
+          flipX: App.flipX,
+          flipY: App.flipY,
+          showEyeline: App.showEyeline,
+          useCountdown: App.useCountdown,
+          mode: App.mode
         };
-        localStorage.setItem('teleprompter_settings', JSON.stringify(toSave));
-        localStorage.setItem('teleprompter_script', AppState.scriptText);
-
-        DOM.saveStatus.textContent = 'Đã lưu lúc ' + new Date().toLocaleTimeString('vi-VN');
-      } catch (e) {
-        console.warn('Save state error:', e);
-      }
+        localStorage.setItem('cueprompter_settings', JSON.stringify(toSave));
+        localStorage.setItem('cueprompter_script', App.scriptText);
+        UI.saveStatus.textContent = 'Đã lưu lúc ' + new Date().toLocaleTimeString('vi-VN');
+      } catch (e) {}
     }
 
     /* ============================================================== */
-    /* SCRIPT ANALYSIS (WORD COUNT & TIME) */
+    /* 2. STATS & SCRIPT PARSING */
     /* ============================================================== */
     function updateScriptStats() {
-      const text = DOM.scriptInput.value.trim();
-      AppState.scriptText = text;
+      const text = UI.scriptInput.value.trim();
+      App.scriptText = text;
 
-      // Calculate words count in Vietnamese / Unicode
       const words = text ? text.split(/\s+/).filter(w => w.length > 0) : [];
       const count = words.length;
-      DOM.editorWordCount.textContent = count.toLocaleString('vi-VN');
+      UI.editorWordCount.textContent = count.toLocaleString('vi-VN');
 
-      // Estimated reading time at ~140 words per minute
       const totalSeconds = Math.round((count / 140) * 60);
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
-      DOM.editorEstTime.textContent = 
-        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-      
-      saveState();
+      UI.editorEstTime.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+      saveSettings();
     }
 
     /* ============================================================== */
-    /* UI SYNC & RENDER */
-    /* ============================================================== */
-    function syncUIFromState() {
-      // Editor Controls
-      DOM.scriptInput.value = AppState.scriptText;
-      DOM.editorSpeedSlider.value = AppState.speed;
-      DOM.editorSpeedVal.textContent = AppState.speed;
-      DOM.editorFontSizeSlider.value = AppState.fontSize;
-      DOM.editorFontSizeVal.textContent = AppState.fontSize + 'px';
-      DOM.editorContainerWidth.value = AppState.containerWidth;
-      DOM.editorEyelineToggle.checked = AppState.showEyeline;
-      DOM.editorFlipX.checked = AppState.flipX;
-      DOM.editorFlipY.checked = AppState.flipY;
-
-      // Prompter Controls
-      DOM.prompterSpeedNum.value = AppState.speed;
-      DOM.prompterSpeedSlider.value = AppState.speed;
-      DOM.prompterFontSizeText.textContent = AppState.fontSize;
-
-      // Text Alignment Buttons
-      DOM.alignButtons.forEach(btn => {
-        if (btn.dataset.align === AppState.align) {
-          btn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500');
-          btn.classList.remove('bg-slate-700/60', 'text-slate-200', 'border-transparent');
-        } else {
-          btn.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500');
-          btn.classList.add('bg-slate-700/60', 'text-slate-200', 'border-transparent');
-        }
-      });
-
-      // Apply Width Container
-      DOM.prompterWidthContainer.className = `${AppState.containerWidth} mx-auto px-6 md:px-12 pt-[35vh] pb-[60vh]`;
-
-      // Apply Text alignment & Font size
-      DOM.prompterDisplayContent.style.textAlign = AppState.align;
-      DOM.prompterDisplayContent.style.fontSize = AppState.fontSize + 'px';
-
-      // Eyeline visibility
-      DOM.eyelineGuide.style.display = AppState.showEyeline ? 'flex' : 'none';
-
-      // Mirror transform
-      applyMirrorTransform();
-
-      // Theme
-      applyTheme(AppState.theme);
-
-      // Stats
-      updateScriptStats();
-    }
-
-    function applyMirrorTransform() {
-      // Toggle button highlight in Prompter
-      if (AppState.flipX) {
-        DOM.btnFlipX.classList.add('bg-indigo-600', 'text-white');
-        DOM.btnFlipX.classList.remove('bg-slate-800', 'text-slate-300');
-      } else {
-        DOM.btnFlipX.classList.remove('bg-indigo-600', 'text-white');
-        DOM.btnFlipX.classList.add('bg-slate-800', 'text-slate-300');
-      }
-
-      if (AppState.flipY) {
-        DOM.btnFlipY.classList.add('bg-indigo-600', 'text-white');
-        DOM.btnFlipY.classList.remove('bg-slate-800', 'text-slate-300');
-      } else {
-        DOM.btnFlipY.classList.remove('bg-indigo-600', 'text-white');
-        DOM.btnFlipY.classList.add('bg-slate-800', 'text-slate-300');
-      }
-
-      DOM.prompterFlipWrapper.classList.remove('teleprompter-flip-x', 'teleprompter-flip-y', 'teleprompter-flip-both');
-      if (AppState.flipX && AppState.flipY) {
-        DOM.prompterFlipWrapper.classList.add('teleprompter-flip-both');
-      } else if (AppState.flipX) {
-        DOM.prompterFlipWrapper.classList.add('teleprompter-flip-x');
-      } else if (AppState.flipY) {
-        DOM.prompterFlipWrapper.classList.add('teleprompter-flip-y');
-      }
-    }
-
-    function applyTheme(theme) {
-      AppState.theme = theme;
-      const screen = DOM.prompterScreen;
-
-      // Clear previous theme classes
-      screen.classList.remove('bg-black', 'text-white', 'bg-slate-900', 'bg-neutral-50', 'text-neutral-900', 'bg-[#f8f5eb]', 'text-[#2b2416]');
-
-      if (theme === 'light') {
-        screen.classList.add('bg-neutral-50', 'text-neutral-900');
-      } else if (theme === 'sepia') {
-        screen.classList.add('bg-[#f8f5eb]', 'text-[#2b2416]');
-      } else {
-        // Dark default
-        screen.classList.add('bg-black', 'text-white');
-      }
-      saveState();
-    }
-
-    /* ============================================================== */
-    /* SUPER SMOOTH SCROLL ENGINE (requestAnimationFrame) */
+    /* 3. SPEED CONVERSION: LEVEL TO PIXELS PER SECOND */
     /* ============================================================== */
     /**
-     * Pixels Scrolled Calculation:
-     * - `AppState.speed` maps from 1 to 1000.
-     * - We define standard speed such that Speed 120 = ~60-80 pixels/second.
-     * - Formula: pixelSpeedPerSecond = AppState.speed * 0.65.
-     * - Per Frame displacement = pixelSpeedPerSecond * (deltaTime / 1000).
-     * - Using an accumulator prevents floating point truncation on high-refresh (120Hz/144Hz) screens.
+     * Map Speed Level (0.5 to 10.0) smoothly to Pixels Per Second:
+     * Level 0.5 = 20 px/sec (very slow)
+     * Level 3.5 = 75 px/sec (~140 wpm standard talking speed)
+     * Level 10.0 = 300 px/sec (very fast skim)
      */
-    function startScrolling() {
-      if (AppState.isPlaying) return;
-      AppState.isPlaying = true;
-      AppState.lastTimestamp = performance.now();
-      AppState.scrollAccumulator = DOM.prompterScrollArea.scrollTop;
-
-      // Update Play/Pause Button Visuals
-      DOM.btnPlayPause.classList.remove('bg-emerald-600', 'hover:bg-emerald-500', 'shadow-emerald-600/30');
-      DOM.btnPlayPause.classList.add('bg-amber-600', 'hover:bg-amber-500', 'shadow-amber-600/30');
-      DOM.playPauseIcon.innerHTML = `<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-      DOM.playPauseText.textContent = 'DỪNG';
-
-      // Start Reading Timer
-      startTimer();
-
-      // Launch requestAnimationFrame loop
-      AppState.animationFrameId = requestAnimationFrame(scrollStep);
+    function getPixelsPerSecond(level) {
+      return 15 + Math.pow(level, 1.35) * 12.5;
     }
 
-    function pauseScrolling() {
-      if (!AppState.isPlaying) return;
-      AppState.isPlaying = false;
+    function getApproxWPM(level) {
+      // Rough correlation: 75 px/sec with font 48px ~ 140 wpm
+      return Math.round(level * 40);
+    }
 
-      if (AppState.animationFrameId) {
-        cancelAnimationFrame(AppState.animationFrameId);
-        AppState.animationFrameId = null;
+    /* ============================================================== */
+    /* 4. GPU TRANSFORM SCROLL ENGINE (Ultra Smooth 60-144Hz) */
+    /* ============================================================== */
+    function updateGpuTransform() {
+      // Clamp between 0 and maxY
+      App.currentY = Math.max(0, Math.min(App.maxY, App.currentY));
+      // Hardware Accelerated Translate3d (Zero layout reflow!)
+      UI.prompterGpuLayer.style.transform = `translate3d(0, -${App.currentY}px, 0)`;
+    }
+
+    function calculateMaxScroll() {
+      const viewportHeight = UI.prompterViewport.clientHeight;
+      const contentHeight = UI.prompterGpuLayer.scrollHeight;
+      App.maxY = Math.max(0, contentHeight - viewportHeight * 0.35);
+    }
+
+    function startScrollLoop() {
+      if (App.isPlaying) return;
+      App.isPlaying = true;
+      App.lastFrameTime = performance.now();
+
+      // UI state
+      UI.btnPlayPause.classList.remove('bg-emerald-600', 'hover:bg-emerald-500', 'shadow-emerald-600/35');
+      UI.btnPlayPause.classList.add('bg-amber-600', 'hover:bg-amber-500', 'shadow-amber-600/35');
+      UI.playPauseIcon.innerHTML = `<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+      UI.playPauseText.textContent = 'DỪNG';
+
+      startTimer();
+      App.rafId = requestAnimationFrame(renderFrame);
+    }
+
+    function pauseScrollLoop() {
+      if (!App.isPlaying) return;
+      App.isPlaying = false;
+
+      if (App.rafId) {
+        cancelAnimationFrame(App.rafId);
+        App.rafId = null;
       }
 
-      // Restore Play/Pause Button Visuals
-      DOM.btnPlayPause.classList.remove('bg-amber-600', 'hover:bg-amber-500', 'shadow-amber-600/30');
-      DOM.btnPlayPause.classList.add('bg-emerald-600', 'hover:bg-emerald-500', 'shadow-emerald-600/30');
-      DOM.playPauseIcon.innerHTML = `<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
-      DOM.playPauseText.textContent = 'PHÁT';
+      UI.btnPlayPause.classList.remove('bg-amber-600', 'hover:bg-amber-500', 'shadow-amber-600/35');
+      UI.btnPlayPause.classList.add('bg-emerald-600', 'hover:bg-emerald-500', 'shadow-emerald-600/35');
+      UI.playPauseIcon.innerHTML = `<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+      UI.playPauseText.textContent = 'PHÁT';
 
-      // Pause Reading Timer
       pauseTimer();
     }
 
     function togglePlayPause() {
-      if (AppState.isPlaying) {
-        pauseScrolling();
+      if (App.isCountingDown) {
+        skipCountdown();
+        return;
+      }
+      if (App.isPlaying) {
+        pauseScrollLoop();
       } else {
-        startScrolling();
+        if (App.useCountdown && App.currentY < 10) {
+          triggerCountdown(() => startScrollLoop());
+        } else {
+          startScrollLoop();
+        }
       }
     }
 
-    function scrollStep(currentTime) {
-      if (!AppState.isPlaying) return;
+    function renderFrame(now) {
+      if (!App.isPlaying) return;
 
-      // Calculate elapsed time (delta time) since last frame
-      const deltaTime = currentTime - AppState.lastTimestamp;
-      AppState.lastTimestamp = currentTime;
+      const deltaMs = now - App.lastFrameTime;
+      App.lastFrameTime = now;
 
-      // Cap delta time to 100ms to avoid huge jumps if user switches tabs
-      const safeDeltaTime = Math.min(deltaTime, 100);
+      // Cap delta time to 60ms to avoid jumping if user unfocuses browser tab
+      const safeDeltaMs = Math.min(deltaMs, 60);
 
-      // Speed calculation: scale speed 1-1000 to smooth pixel velocity (px per second)
-      // Speed 100 = ~65 px/sec, Speed 500 = ~325 px/sec
-      const pixelsPerSecond = AppState.speed * 0.65;
-      const stepIncrement = (pixelsPerSecond * safeDeltaTime) / 1000;
+      const pxPerSec = getPixelsPerSecond(App.speedLevel);
+      const increment = (pxPerSec * safeDeltaMs) / 1000;
 
-      // Keep sub-pixel accumulator updated
-      AppState.scrollAccumulator += stepIncrement;
+      App.currentY += increment;
 
-      const maxScroll = DOM.prompterScrollArea.scrollHeight - DOM.prompterScrollArea.clientHeight;
-
-      if (AppState.scrollAccumulator >= maxScroll) {
-        // Reached end of script
-        DOM.prompterScrollArea.scrollTop = maxScroll;
-        pauseScrolling();
+      if (App.currentY >= App.maxY) {
+        App.currentY = App.maxY;
+        updateGpuTransform();
+        pauseScrollLoop();
         return;
       }
 
-      // Apply scroll position
-      DOM.prompterScrollArea.scrollTop = AppState.scrollAccumulator;
-
-      // Continue frame loop
-      AppState.animationFrameId = requestAnimationFrame(scrollStep);
+      updateGpuTransform();
+      App.rafId = requestAnimationFrame(renderFrame);
     }
 
-    function resetScroll() {
-      DOM.prompterScrollArea.scrollTop = 0;
-      AppState.scrollAccumulator = 0;
-      AppState.lastTimestamp = performance.now();
+    function resetPrompterScroll() {
+      App.currentY = 0;
+      updateGpuTransform();
     }
 
-    function jumpScroll(deltaPixels) {
-      DOM.prompterScrollArea.scrollTop += deltaPixels;
-      AppState.scrollAccumulator = DOM.prompterScrollArea.scrollTop;
+    function jumpSeconds(seconds) {
+      const pxPerSec = getPixelsPerSecond(App.speedLevel);
+      App.currentY += pxPerSec * seconds;
+      updateGpuTransform();
     }
-
-    /* Synchronize accumulator if user manually scrolls with mouse wheel/drag */
-    DOM.prompterScrollArea.addEventListener('scroll', () => {
-      // If manual scroll drifts from accumulator by more than 5px, sync accumulator
-      if (Math.abs(DOM.prompterScrollArea.scrollTop - AppState.scrollAccumulator) > 5) {
-        AppState.scrollAccumulator = DOM.prompterScrollArea.scrollTop;
-      }
-    }, { passive: true });
-
 
     /* ============================================================== */
-    /* READING STOPWATCH TIMER */
+    /* 5. COUNTDOWN OVERLAY (3, 2, 1, GO!) */
+    /* ============================================================== */
+    function triggerCountdown(onComplete) {
+      App.isCountingDown = true;
+      let count = 3;
+      UI.countdownNumber.textContent = count;
+      UI.countdownOverlay.classList.remove('hidden');
+
+      if (App.countdownInterval) clearInterval(App.countdownInterval);
+
+      App.countdownInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          UI.countdownNumber.textContent = count;
+          UI.countdownNumber.classList.remove('animate-count-pop');
+          void UI.countdownNumber.offsetWidth; // retrigger css animation
+          UI.countdownNumber.classList.add('animate-count-pop');
+        } else {
+          clearInterval(App.countdownInterval);
+          App.countdownInterval = null;
+          App.isCountingDown = false;
+          UI.countdownOverlay.classList.add('hidden');
+          if (onComplete) onComplete();
+        }
+      }, 900);
+    }
+
+    function skipCountdown() {
+      if (App.countdownInterval) {
+        clearInterval(App.countdownInterval);
+        App.countdownInterval = null;
+      }
+      App.isCountingDown = false;
+      UI.countdownOverlay.classList.add('hidden');
+      startScrollLoop();
+    }
+
+    /* ============================================================== */
+    /* 6. STOPWATCH TIMER */
     /* ============================================================== */
     function startTimer() {
-      if (AppState.timerIntervalId) return;
-      AppState.timerIntervalId = setInterval(() => {
-        AppState.timerSeconds++;
-        const mins = Math.floor(AppState.timerSeconds / 60);
-        const secs = AppState.timerSeconds % 60;
-        DOM.prompterTimer.textContent = 
-          `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      if (App.timerInterval) return;
+      App.timerInterval = setInterval(() => {
+        App.timerSeconds++;
+        const mins = Math.floor(App.timerSeconds / 60);
+        const secs = App.timerSeconds % 60;
+        UI.prompterTimer.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
       }, 1000);
     }
 
     function pauseTimer() {
-      if (AppState.timerIntervalId) {
-        clearInterval(AppState.timerIntervalId);
-        AppState.timerIntervalId = null;
+      if (App.timerInterval) {
+        clearInterval(App.timerInterval);
+        App.timerInterval = null;
       }
     }
 
     function resetTimer() {
       pauseTimer();
-      AppState.timerSeconds = 0;
-      DOM.prompterTimer.textContent = '00:00';
+      App.timerSeconds = 0;
+      UI.prompterTimer.textContent = '00:00';
     }
 
-
     /* ============================================================== */
-    /* PREPARE PROMPTER CONTENT WITH SENTENCE SPANS */
+    /* 7. PREPARE TEXT CANVAS & SPEECH CHUNKS */
     /* ============================================================== */
-    function preparePrompterContent() {
-      const text = AppState.scriptText.trim();
-      DOM.prompterDisplayContent.innerHTML = '';
+    function renderPrompterCanvas() {
+      const text = App.scriptText.trim();
+      UI.prompterTextCanvas.innerHTML = '';
+      App.speechItems = [];
 
       if (!text) {
-        DOM.prompterDisplayContent.innerHTML = '<span class="text-slate-500 italic">Chưa có nội dung kịch bản. Hãy quay lại soạn thảo kịch bản!</span>';
-        AppState.sentencesList = [];
+        UI.prompterTextCanvas.innerHTML = '<span class="text-slate-500 italic">Chưa có nội dung kịch bản. Hãy quay lại soạn thảo kịch bản!</span>';
         return;
       }
 
-      // Split text into paragraphs and sentence chunks for voice tracking
       const paragraphs = text.split('\n');
-      AppState.sentencesList = [];
-      let globalIndex = 0;
+      let globalIdx = 0;
 
-      paragraphs.forEach((para, pIdx) => {
+      paragraphs.forEach(para => {
         if (!para.trim()) {
-          const emptyBreak = document.createElement('div');
-          emptyBreak.className = 'h-8';
-          DOM.prompterDisplayContent.appendChild(emptyBreak);
+          const br = document.createElement('div');
+          br.className = 'h-8';
+          UI.prompterTextCanvas.appendChild(br);
           return;
         }
 
-        const pElem = document.createElement('p');
-        pElem.className = 'mb-6';
+        const p = document.createElement('p');
+        p.className = 'mb-8';
 
-        // Split paragraph into sentence chunks by punctuation
-        const rawSentences = para.split(/([.?!,;\n]+)/g);
-        let accumulatedChunk = '';
+        // Split paragraph by sentences
+        const segments = para.split(/([.?!,;\n]+)/g);
+        let currentChunk = '';
 
-        for (let i = 0; i < rawSentences.length; i++) {
-          accumulatedChunk += rawSentences[i];
-          // If we reach punctuation or end of string, create a sentence span
-          if (i % 2 === 1 || i === rawSentences.length - 1) {
-            const cleanText = accumulatedChunk.trim();
-            if (cleanText) {
+        for (let i = 0; i < segments.length; i++) {
+          currentChunk += segments[i];
+          if (i % 2 === 1 || i === segments.length - 1) {
+            const clean = currentChunk.trim();
+            if (clean) {
               const span = document.createElement('span');
-              span.textContent = accumulatedChunk + ' ';
-              span.id = `prompter-sentence-${globalIndex}`;
-              span.dataset.index = globalIndex;
-              span.className = 'prompter-span inline transition-colors duration-200';
-              pElem.appendChild(span);
+              span.textContent = currentChunk + ' ';
+              span.id = `cue-chunk-${globalIdx}`;
+              span.className = 'prompter-chunk inline transition-all duration-200';
+              p.appendChild(span);
 
-              AppState.sentencesList.push({
-                index: globalIndex,
-                text: cleanText.toLowerCase(),
+              App.speechItems.push({
+                index: globalIdx,
+                text: clean.toLowerCase(),
                 element: span
               });
-              globalIndex++;
+              globalIdx++;
             }
-            accumulatedChunk = '';
+            currentChunk = '';
           }
         }
 
-        DOM.prompterDisplayContent.appendChild(pElem);
+        UI.prompterTextCanvas.appendChild(p);
       });
+
+      // Apply styling
+      applyCanvasStyles();
+      // Recalculate scroll dimensions
+      setTimeout(calculateMaxScroll, 50);
     }
 
+    function applyCanvasStyles() {
+      UI.prompterTextCanvas.style.fontSize = `${App.fontSize}px`;
+      UI.prompterTextCanvas.style.lineHeight = App.lineHeight;
+      UI.prompterTextCanvas.style.textAlign = App.textAlign;
+      UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
+      UI.prompterSpeedSlider.value = App.speedLevel;
+      UI.prompterFontSizeDisplay.textContent = App.fontSize;
+      UI.eyelineMarker.style.opacity = App.showEyeline ? '1' : '0';
+      applyMirror();
+      applyTheme();
+    }
+
+    function applyMirror() {
+      // Toggle button highlights
+      if (App.flipX) {
+        UI.btnFlipX.classList.add('bg-indigo-600', 'text-white');
+        UI.btnFlipX.classList.remove('bg-slate-800', 'text-slate-300');
+      } else {
+        UI.btnFlipX.classList.remove('bg-indigo-600', 'text-white');
+        UI.btnFlipX.classList.add('bg-slate-800', 'text-slate-300');
+      }
+
+      if (App.flipY) {
+        UI.btnFlipY.classList.add('bg-indigo-600', 'text-white');
+        UI.btnFlipY.classList.remove('bg-slate-800', 'text-slate-300');
+      } else {
+        UI.btnFlipY.classList.remove('bg-indigo-600', 'text-white');
+        UI.btnFlipY.classList.add('bg-slate-800', 'text-slate-300');
+      }
+
+      UI.prompterMirrorWrapper.classList.remove('flip-x', 'flip-y', 'flip-both');
+      if (App.flipX && App.flipY) {
+        UI.prompterMirrorWrapper.classList.add('flip-both');
+      } else if (App.flipX) {
+        UI.prompterMirrorWrapper.classList.add('flip-x');
+      } else if (App.flipY) {
+        UI.prompterMirrorWrapper.classList.add('flip-y');
+      }
+    }
+
+    function applyTheme() {
+      const screen = UI.prompterScreen;
+      screen.classList.remove('bg-black', 'text-white', 'bg-[#0f111a]', 'bg-neutral-50', 'text-neutral-900', 'bg-[#fbf4e4]', 'text-[#2b2416]');
+
+      if (App.theme === 'light') {
+        screen.classList.add('bg-neutral-50', 'text-neutral-900');
+      } else if (App.theme === 'sepia') {
+        screen.classList.add('bg-[#fbf4e4]', 'text-[#2b2416]');
+      } else {
+        screen.classList.add('bg-black', 'text-white');
+      }
+    }
 
     /* ============================================================== */
-    /* ADVANCED: SPEECH RECOGNITION (WEB SPEECH API) */
+    /* 8. WEB SPEECH API (SMART VOICE FOLLOW) */
     /* ============================================================== */
-    function initSpeechRecognition() {
+    function initSpeechEngine() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert('Trình duyệt của bạn hiện chưa hỗ trợ Web Speech API. Vui lòng thử trên Google Chrome hoặc Microsoft Edge!');
+        alert('Trình duyệt chưa hỗ trợ Web Speech API. Vui lòng mở bằng Google Chrome hoặc Microsoft Edge!');
         return false;
       }
 
       try {
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'vi-VN';
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.maxAlternatives = 1;
+        const sr = new SpeechRecognition();
+        sr.lang = 'vi-VN';
+        sr.continuous = true;
+        sr.interimResults = true;
+        sr.maxAlternatives = 1;
 
-        recognition.onstart = () => {
-          AppState.isVoiceTracking = true;
-          DOM.micIconStatus.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 mic-pulsing';
-          DOM.btnVoiceTrack.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500');
-          DOM.voiceStatusBadge.classList.remove('hidden');
-          DOM.voiceStatusText.textContent = 'Đang nhận diện giọng nói tiếng Việt...';
+        sr.onstart = () => {
+          App.isVoiceActive = true;
+          UI.micIndicator.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
+          UI.btnVoiceToggle.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500');
+          UI.voiceToast.classList.remove('hidden');
+          UI.voiceToastText.textContent = 'Đang nhận diện giọng nói tiếng Việt...';
         };
 
-        recognition.onresult = (event) => {
-          let interimTranscript = '';
-          let finalTranscript = '';
-
+        sr.onresult = (event) => {
+          let heard = '';
           for (let i = event.resultIndex; i < event.results.length; ++i) {
-            const item = event.results[i];
-            if (item.isFinal) {
-              finalTranscript += item[0].transcript;
-            } else {
-              interimTranscript += item[0].transcript;
-            }
+            heard += event.results[i][0].transcript;
           }
-
-          const heardText = (finalTranscript || interimTranscript).trim().toLowerCase();
-          if (!heardText) return;
-
-          matchSpeechToPrompter(heardText);
+          heard = heard.trim().toLowerCase();
+          if (heard) matchSpeechToCanvas(heard);
         };
 
-        recognition.onerror = (event) => {
-          console.warn('Speech recognition notice:', event.error);
-          DOM.voiceStatusText.textContent = 'Lỗi nhận diện (' + event.error + '). Tự động cuộn đều...';
+        sr.onerror = (e) => {
+          console.warn('Speech error:', e.error);
         };
 
-        recognition.onend = () => {
-          if (AppState.isVoiceTracking) {
-            // Restart if user hasn't explicitly disabled it
-            try {
-              recognition.start();
-            } catch (e) {
-              // Ignore already started
-            }
+        sr.onend = () => {
+          if (App.isVoiceActive) {
+            try { sr.start(); } catch (e) {}
           } else {
-            DOM.micIconStatus.className = 'w-2.5 h-2.5 rounded-full bg-slate-500';
-            DOM.btnVoiceTrack.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500');
-            DOM.voiceStatusBadge.classList.add('hidden');
+            UI.micIndicator.className = 'w-2.5 h-2.5 rounded-full bg-slate-500';
+            UI.btnVoiceToggle.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500');
+            UI.voiceToast.classList.add('hidden');
           }
         };
 
-        AppState.recognitionInstance = recognition;
+        App.recognition = sr;
         return true;
-      } catch (err) {
-        console.error('Failed to init speech recognition:', err);
+      } catch (e) {
         return false;
       }
     }
 
-    function toggleVoiceTracking() {
-      if (AppState.isVoiceTracking) {
-        // Turn off
-        AppState.isVoiceTracking = false;
-        if (AppState.recognitionInstance) {
-          AppState.recognitionInstance.stop();
-        }
-        DOM.micIconStatus.className = 'w-2.5 h-2.5 rounded-full bg-slate-500';
-        DOM.btnVoiceTrack.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500');
-        DOM.voiceStatusBadge.classList.add('hidden');
+    function toggleVoiceEngine() {
+      if (App.isVoiceActive) {
+        App.isVoiceActive = false;
+        if (App.recognition) App.recognition.stop();
+        UI.micIndicator.className = 'w-2.5 h-2.5 rounded-full bg-slate-500';
+        UI.btnVoiceToggle.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500');
+        UI.voiceToast.classList.add('hidden');
       } else {
-        // Turn on
-        if (!AppState.recognitionInstance) {
-          const supported = initSpeechRecognition();
-          if (!supported) return;
+        if (!App.recognition) {
+          const ok = initSpeechEngine();
+          if (!ok) return;
         }
-        try {
-          AppState.recognitionInstance.start();
-        } catch (e) {
-          console.warn('Start recognition:', e);
-        }
+        try { App.recognition.start(); } catch (e) {}
       }
     }
 
-    function matchSpeechToPrompter(heardWords) {
-      if (!AppState.sentencesList || AppState.sentencesList.length === 0) return;
+    function matchSpeechToCanvas(heardPhrase) {
+      if (!App.speechItems || App.speechItems.length === 0) return;
 
-      const wordsHeard = heardWords.split(/\s+/).filter(w => w.length > 1);
-      if (wordsHeard.length === 0) return;
+      const words = heardPhrase.split(/\s+/).filter(w => w.length > 1);
+      if (words.length === 0) return;
 
-      let bestMatch = null;
+      let bestItem = null;
       let highestScore = 0;
 
-      // Scan through sentences and find matching score
-      AppState.sentencesList.forEach(item => {
-        let matchScore = 0;
-        wordsHeard.forEach(w => {
-          if (item.text.includes(w)) matchScore++;
+      App.speechItems.forEach(item => {
+        let score = 0;
+        words.forEach(w => {
+          if (item.text.includes(w)) score++;
         });
-
-        if (matchScore > highestScore && matchScore >= 2) {
-          highestScore = matchScore;
-          bestMatch = item;
+        if (score > highestScore && score >= 2) {
+          highestScore = score;
+          bestItem = item;
         }
       });
 
-      if (bestMatch && bestMatch.element) {
-        // Highlight active sentence
-        document.querySelectorAll('.spoken-active').forEach(el => el.classList.remove('spoken-active'));
-        bestMatch.element.classList.add('spoken-active');
+      if (bestItem && bestItem.element) {
+        document.querySelectorAll('.speech-highlight').forEach(el => el.classList.remove('speech-highlight'));
+        bestItem.element.classList.add('speech-highlight');
 
-        // Smoothly adjust scroll position so this sentence lands near the 30% eye-line guide
-        const rect = bestMatch.element.getBoundingClientRect();
-        const targetViewportY = window.innerHeight * 0.30;
-        const diff = rect.top - targetViewportY;
+        // Align current chunk to eye-line marker (~30% of viewport)
+        const rect = bestItem.element.getBoundingClientRect();
+        const targetY = window.innerHeight * 0.30;
+        const diff = rect.top - targetY;
 
-        if (Math.abs(diff) > 20) {
-          // Adjust scroll
-          DOM.prompterScrollArea.scrollTop += diff;
-          AppState.scrollAccumulator = DOM.prompterScrollArea.scrollTop;
+        if (Math.abs(diff) > 15) {
+          App.currentY += diff;
+          updateGpuTransform();
         }
 
-        DOM.voiceStatusText.textContent = `Khớp: "${heardWords.slice(-30)}"`;
+        UI.voiceToastText.textContent = `Khớp: "${heardPhrase.slice(-28)}"`;
       }
     }
 
+    /* ============================================================== */
+    /* 9. MOUSE WHEEL & TOUCH SCRUBBING */
+    /* ============================================================== */
+    function setupInteractions() {
+      // Natural Mouse Wheel scrolling without layout jank
+      UI.prompterViewport.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        App.currentY += e.deltaY * 0.85;
+        updateGpuTransform();
+      }, { passive: false });
+
+      // Touch drag scrolling for iPads / tablets
+      let startTouchY = 0;
+      let startScrollY = 0;
+
+      UI.prompterViewport.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          startTouchY = e.touches[0].clientY;
+          startScrollY = App.currentY;
+        }
+      }, { passive: true });
+
+      UI.prompterViewport.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1) {
+          const delta = startTouchY - e.touches[0].clientY;
+          App.currentY = startScrollY + delta;
+          updateGpuTransform();
+        }
+      }, { passive: true });
+
+      // Auto-hide top control header when idle
+      let idleTimer = null;
+      window.addEventListener('mousemove', () => {
+        if (!App.isPrompterActive) return;
+        UI.controlHeader.classList.remove('header-docked');
+        clearTimeout(idleTimer);
+        if (App.isPlaying) {
+          idleTimer = setTimeout(() => {
+            UI.controlHeader.classList.add('header-docked');
+          }, 2400);
+        }
+      });
+    }
 
     /* ============================================================== */
-    /* FULLSCREEN CONTROLLER */
+    /* 10. SCREEN SWITCHING & FULLSCREEN */
     /* ============================================================== */
+    function openPrompter() {
+      App.scriptText = UI.scriptInput.value;
+      saveSettings();
+
+      renderPrompterCanvas();
+      resetPrompterScroll();
+      resetTimer();
+
+      UI.editorScreen.classList.add('hidden');
+      UI.prompterScreen.classList.remove('hidden');
+      App.isPrompterActive = true;
+
+      if (App.mode === 'voice') {
+        toggleVoiceEngine();
+      }
+
+      if (App.useCountdown) {
+        triggerCountdown(() => startScrollLoop());
+      } else {
+        startScrollLoop();
+      }
+    }
+
+    function closePrompter() {
+      pauseScrollLoop();
+      if (App.isVoiceActive) toggleVoiceEngine();
+      if (App.countdownInterval) {
+        clearInterval(App.countdownInterval);
+        App.countdownInterval = null;
+      }
+      UI.countdownOverlay.classList.add('hidden');
+
+      UI.prompterScreen.classList.add('hidden');
+      UI.editorScreen.classList.remove('hidden');
+      App.isPrompterActive = false;
+
+      updateScriptStats();
+    }
+
     function toggleFullscreen() {
       if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-          console.warn('Fullscreen request failed:', err);
-        });
+        document.documentElement.requestFullscreen().catch(() => {});
       } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
+        if (document.exitFullscreen) document.exitFullscreen();
       }
     }
 
     document.addEventListener('fullscreenchange', () => {
       const isFull = !!document.fullscreenElement;
-      if (isFull) {
-        DOM.fullscreenIconExpand.classList.add('hidden');
-        DOM.fullscreenIconCompress.classList.remove('hidden');
-      } else {
-        DOM.fullscreenIconExpand.classList.remove('hidden');
-        DOM.fullscreenIconCompress.classList.add('hidden');
-      }
+      UI.fsExpandIcon.classList.toggle('hidden', isFull);
+      UI.fsCompressIcon.classList.toggle('hidden', !isFull);
+      setTimeout(calculateMaxScroll, 100);
     });
 
-
     /* ============================================================== */
-    /* SCREEN SWITCHING */
-    /* ============================================================== */
-    function openPrompterScreen() {
-      // Save current script from editor
-      AppState.scriptText = DOM.scriptInput.value;
-      saveState();
-
-      // Prepare prompter text elements
-      preparePrompterContent();
-
-      // Reset scroll to top
-      resetScroll();
-      resetTimer();
-
-      // Show prompter, hide editor
-      DOM.editorScreen.classList.add('hidden');
-      DOM.prompterScreen.classList.remove('hidden');
-      AppState.isPrompterActive = true;
-
-      // Apply latest settings
-      syncUIFromState();
-    }
-
-    function backToEditorScreen() {
-      // Pause playback and stop voice if running
-      pauseScrolling();
-      if (AppState.isVoiceTracking && AppState.recognitionInstance) {
-        toggleVoiceTracking();
-      }
-
-      // Hide prompter, show editor
-      DOM.prompterScreen.classList.add('hidden');
-      DOM.editorScreen.classList.remove('hidden');
-      AppState.isPrompterActive = false;
-
-      // Update editor stats
-      updateScriptStats();
-    }
-
-
-    /* ============================================================== */
-    /* EVENT LISTENERS & SHORTCUTS */
+    /* 11. EVENT LISTENERS */
     /* ============================================================== */
     function setupEventListeners() {
-      // Editor script input
-      DOM.scriptInput.addEventListener('input', updateScriptStats);
+      UI.scriptInput.addEventListener('input', updateScriptStats);
+      UI.btnStartPrompter.addEventListener('click', openPrompter);
 
-      // Start Prompter Button
-      DOM.btnStartPrompter.addEventListener('click', openPrompterScreen);
-
-      // Sample Script & Clear Script
-      DOM.btnLoadSample.addEventListener('click', () => {
-        if (confirm('Bạn có muốn tải kịch bản mẫu không? Nội dung hiện tại sẽ được thay thế.')) {
-          DOM.scriptInput.value = SAMPLE_SCRIPT;
+      UI.btnLoadSample.addEventListener('click', () => {
+        if (confirm('Tải kịch bản mẫu? Nội dung hiện tại sẽ được thay thế.')) {
+          UI.scriptInput.value = SAMPLE_SCRIPT;
           updateScriptStats();
         }
       });
 
-      DOM.btnClearScript.addEventListener('click', () => {
-        if (confirm('Bạn có chắc chắn muốn xóa toàn bộ kịch bản này?')) {
-          DOM.scriptInput.value = '';
+      UI.btnClearScript.addEventListener('click', () => {
+        if (confirm('Xóa toàn bộ kịch bản?')) {
+          UI.scriptInput.value = '';
           updateScriptStats();
         }
       });
 
-      // Editor Speed Slider
-      DOM.editorSpeedSlider.addEventListener('input', (e) => {
-        const val = parseInt(e.target.value, 10);
-        AppState.speed = val;
-        DOM.editorSpeedVal.textContent = val;
-        DOM.prompterSpeedNum.value = val;
-        DOM.prompterSpeedSlider.value = val;
-        saveState();
+      // Mode toggles
+      UI.tabModeSpeed.addEventListener('click', () => {
+        App.mode = 'speed';
+        UI.tabModeSpeed.className = 'py-2 px-2 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition';
+        UI.tabModeVoice.className = 'py-2 px-2 rounded-lg text-slate-400 hover:text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition';
+        saveSettings();
       });
 
-      // Editor Font Size Slider
-      DOM.editorFontSizeSlider.addEventListener('input', (e) => {
-        const val = parseInt(e.target.value, 10);
-        AppState.fontSize = val;
-        DOM.editorFontSizeVal.textContent = val + 'px';
-        DOM.prompterFontSizeText.textContent = val;
-        saveState();
+      UI.tabModeVoice.addEventListener('click', () => {
+        App.mode = 'voice';
+        UI.tabModeVoice.className = 'py-2 px-2 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition';
+        UI.tabModeSpeed.className = 'py-2 px-2 rounded-lg text-slate-400 hover:text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition';
+        saveSettings();
       });
 
-      // Editor Alignment Buttons
-      DOM.alignButtons.forEach(btn => {
+      // Speed Sliders
+      UI.editorSpeedSlider.addEventListener('input', (e) => {
+        App.speedLevel = parseFloat(e.target.value);
+        UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
+        UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
+        UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
+        UI.prompterSpeedSlider.value = App.speedLevel;
+        saveSettings();
+      });
+
+      UI.prompterSpeedSlider.addEventListener('input', (e) => {
+        App.speedLevel = parseFloat(e.target.value);
+        UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
+        UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
+        UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
+        UI.editorSpeedSlider.value = App.speedLevel;
+        saveSettings();
+      });
+
+      UI.btnSpeedUp.addEventListener('click', () => {
+        App.speedLevel = Math.min(10, App.speedLevel + 0.5);
+        UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
+        UI.prompterSpeedSlider.value = App.speedLevel;
+        UI.editorSpeedSlider.value = App.speedLevel;
+        UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
+        UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
+        saveSettings();
+      });
+
+      UI.btnSpeedDown.addEventListener('click', () => {
+        App.speedLevel = Math.max(0.5, App.speedLevel - 0.5);
+        UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
+        UI.prompterSpeedSlider.value = App.speedLevel;
+        UI.editorSpeedSlider.value = App.speedLevel;
+        UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
+        UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
+        saveSettings();
+      });
+
+      // Font Size Sliders
+      UI.editorFontSizeSlider.addEventListener('input', (e) => {
+        App.fontSize = parseInt(e.target.value, 10);
+        UI.editorFontSizeVal.textContent = `${App.fontSize}px`;
+        applyCanvasStyles();
+        saveSettings();
+      });
+
+      UI.btnFontUp.addEventListener('click', () => {
+        App.fontSize = Math.min(96, App.fontSize + 4);
+        UI.editorFontSizeSlider.value = App.fontSize;
+        UI.editorFontSizeVal.textContent = `${App.fontSize}px`;
+        applyCanvasStyles();
+        saveSettings();
+      });
+
+      UI.btnFontDown.addEventListener('click', () => {
+        App.fontSize = Math.max(20, App.fontSize - 4);
+        UI.editorFontSizeSlider.value = App.fontSize;
+        UI.editorFontSizeVal.textContent = `${App.fontSize}px`;
+        applyCanvasStyles();
+        saveSettings();
+      });
+
+      // Line Height Slider
+      UI.editorLineHeightSlider.addEventListener('input', (e) => {
+        App.lineHeight = parseFloat(e.target.value);
+        UI.editorLineHeightVal.textContent = `${App.lineHeight}x`;
+        applyCanvasStyles();
+        saveSettings();
+      });
+
+      // Align buttons
+      UI.alignBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-          AppState.align = btn.dataset.align;
-          syncUIFromState();
-          saveState();
+          App.textAlign = btn.dataset.align;
+          UI.alignBtns.forEach(b => {
+            if (b.dataset.align === App.textAlign) {
+              b.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500');
+              b.classList.remove('bg-slate-800', 'text-slate-300');
+            } else {
+              b.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500');
+              b.classList.add('bg-slate-800', 'text-slate-300');
+            }
+          });
+          applyCanvasStyles();
+          saveSettings();
         });
       });
 
-      // Container Width Selector
-      DOM.editorContainerWidth.addEventListener('change', (e) => {
-        AppState.containerWidth = e.target.value;
-        syncUIFromState();
-        saveState();
+      // Countdown toggle & Eyeline toggle
+      UI.editorCountdownToggle.addEventListener('change', (e) => {
+        App.useCountdown = e.target.checked;
+        saveSettings();
       });
 
-      // Eyeline Guide Toggle
-      DOM.editorEyelineToggle.addEventListener('change', (e) => {
-        AppState.showEyeline = e.target.checked;
-        syncUIFromState();
-        saveState();
+      UI.editorEyelineToggle.addEventListener('change', (e) => {
+        App.showEyeline = e.target.checked;
+        applyCanvasStyles();
+        saveSettings();
       });
 
-      // Mirror Toggles in Editor
-      DOM.editorFlipX.addEventListener('change', (e) => {
-        AppState.flipX = e.target.checked;
-        applyMirrorTransform();
-        saveState();
+      // Mirror Toggles
+      UI.editorFlipX.addEventListener('change', (e) => {
+        App.flipX = e.target.checked;
+        applyMirror();
+        saveSettings();
       });
-      DOM.editorFlipY.addEventListener('change', (e) => {
-        AppState.flipY = e.target.checked;
-        applyMirrorTransform();
-        saveState();
-      });
-
-      // Prompter Controls
-      DOM.btnBackToEditor.addEventListener('click', backToEditorScreen);
-      DOM.btnPlayPause.addEventListener('click', togglePlayPause);
-      DOM.btnResetScroll.addEventListener('click', resetScroll);
-      DOM.btnResetTimer.addEventListener('click', resetTimer);
-
-      // Prompter Speed Up / Down
-      DOM.btnSpeedUp.addEventListener('click', () => {
-        AppState.speed = Math.min(1000, AppState.speed + 15);
-        DOM.prompterSpeedNum.value = AppState.speed;
-        DOM.prompterSpeedSlider.value = AppState.speed;
-        DOM.editorSpeedVal.textContent = AppState.speed;
-        saveState();
+      UI.editorFlipY.addEventListener('change', (e) => {
+        App.flipY = e.target.checked;
+        applyMirror();
+        saveSettings();
       });
 
-      DOM.btnSpeedDown.addEventListener('click', () => {
-        AppState.speed = Math.max(1, AppState.speed - 15);
-        DOM.prompterSpeedNum.value = AppState.speed;
-        DOM.prompterSpeedSlider.value = AppState.speed;
-        DOM.editorSpeedVal.textContent = AppState.speed;
-        saveState();
+      UI.btnFlipX.addEventListener('click', () => {
+        App.flipX = !App.flipX;
+        UI.editorFlipX.checked = App.flipX;
+        applyMirror();
+        saveSettings();
+      });
+      UI.btnFlipY.addEventListener('click', () => {
+        App.flipY = !App.flipY;
+        UI.editorFlipY.checked = App.flipY;
+        applyMirror();
+        saveSettings();
       });
 
-      DOM.prompterSpeedSlider.addEventListener('input', (e) => {
-        const val = parseInt(e.target.value, 10);
-        AppState.speed = val;
-        DOM.prompterSpeedNum.value = val;
-        DOM.editorSpeedVal.textContent = val;
-        saveState();
+      // Theme toggle
+      UI.btnToggleTheme.addEventListener('click', () => {
+        const themes = ['dark', 'light', 'sepia'];
+        const nextIdx = (themes.indexOf(App.theme) + 1) % themes.length;
+        App.theme = themes[nextIdx];
+        applyTheme();
+        saveSettings();
       });
 
-      DOM.prompterSpeedNum.addEventListener('change', (e) => {
-        let val = parseInt(e.target.value, 10);
-        if (isNaN(val) || val < 1) val = 1;
-        if (val > 1000) val = 1000;
-        AppState.speed = val;
-        DOM.prompterSpeedNum.value = val;
-        DOM.prompterSpeedSlider.value = val;
-        DOM.editorSpeedVal.textContent = val;
-        saveState();
-      });
+      // Prompter controls
+      UI.btnBackToEditor.addEventListener('click', closePrompter);
+      UI.btnPlayPause.addEventListener('click', togglePlayPause);
+      UI.btnResetScroll.addEventListener('click', resetPrompterScroll);
+      UI.btnJumpBack.addEventListener('click', () => jumpSeconds(-5));
+      UI.btnJumpForward.addEventListener('click', () => jumpSeconds(5));
+      UI.btnVoiceToggle.addEventListener('click', toggleVoiceEngine);
+      UI.btnFullscreen.addEventListener('click', toggleFullscreen);
+      UI.btnSkipCountdown.addEventListener('click', skipCountdown);
 
-      // Prompter Font Size Up / Down
-      DOM.btnFontUp.addEventListener('click', () => {
-        AppState.fontSize = Math.min(96, AppState.fontSize + 4);
-        DOM.prompterFontSizeText.textContent = AppState.fontSize;
-        DOM.prompterDisplayContent.style.fontSize = AppState.fontSize + 'px';
-        DOM.editorFontSizeVal.textContent = AppState.fontSize + 'px';
-        saveState();
-      });
-
-      DOM.btnFontDown.addEventListener('click', () => {
-        AppState.fontSize = Math.max(18, AppState.fontSize - 4);
-        DOM.prompterFontSizeText.textContent = AppState.fontSize;
-        DOM.prompterDisplayContent.style.fontSize = AppState.fontSize + 'px';
-        DOM.editorFontSizeVal.textContent = AppState.fontSize + 'px';
-        saveState();
-      });
-
-      // Mirror Toggles in Prompter
-      DOM.btnFlipX.addEventListener('click', () => {
-        AppState.flipX = !AppState.flipX;
-        DOM.editorFlipX.checked = AppState.flipX;
-        applyMirrorTransform();
-        saveState();
-      });
-
-      DOM.btnFlipY.addEventListener('click', () => {
-        AppState.flipY = !AppState.flipY;
-        DOM.editorFlipY.checked = AppState.flipY;
-        applyMirrorTransform();
-        saveState();
-      });
-
-      // Voice Tracking Toggle
-      DOM.btnVoiceTrack.addEventListener('click', toggleVoiceTracking);
-
-      // Theme Menu Dropdown
-      DOM.btnThemeMenu.addEventListener('click', (e) => {
-        e.stopPropagation();
-        DOM.themeDropdown.classList.toggle('hidden');
-      });
-
-      document.addEventListener('click', () => {
-        DOM.themeDropdown.classList.add('hidden');
-      });
-
-      DOM.themeItems.forEach(item => {
-        item.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const theme = item.dataset.theme;
-          applyTheme(theme);
-          DOM.themeDropdown.classList.add('hidden');
-        });
-      });
-
-      // Fullscreen
-      DOM.btnFullscreen.addEventListener('click', toggleFullscreen);
-
-      // Modal Shortcuts Help
-      DOM.btnShortcutsHelp.addEventListener('click', () => {
-        DOM.shortcutsModal.classList.remove('hidden');
-      });
-      DOM.btnCloseModal.addEventListener('click', () => {
-        DOM.shortcutsModal.classList.add('hidden');
-      });
-      DOM.btnCloseModalBtn.addEventListener('click', () => {
-        DOM.shortcutsModal.classList.add('hidden');
-      });
-      DOM.shortcutsModal.addEventListener('click', (e) => {
-        if (e.target === DOM.shortcutsModal) {
-          DOM.shortcutsModal.classList.add('hidden');
-        }
-      });
-
-      // Auto-hide control bar when idle during reading
-      let idleTimer = null;
-      window.addEventListener('mousemove', () => {
-        if (!AppState.isPrompterActive) return;
-        DOM.controlHeader.classList.remove('control-header-hidden');
-        clearTimeout(idleTimer);
-        if (AppState.isPlaying) {
-          idleTimer = setTimeout(() => {
-            DOM.controlHeader.classList.add('control-header-hidden');
-          }, 2500);
-        }
-      });
+      // Modal
+      UI.btnShortcutsHelp.addEventListener('click', () => UI.shortcutsModal.classList.remove('hidden'));
+      UI.btnCloseModal.addEventListener('click', () => UI.shortcutsModal.classList.add('hidden'));
+      UI.btnCloseModalBtn.addEventListener('click', () => UI.shortcutsModal.classList.add('hidden'));
 
       // GLOBAL KEYBOARD SHORTCUTS
       window.addEventListener('keydown', (e) => {
-        // If typing in textarea or input, do not trigger prompter shortcuts
-        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
-        if (activeTag === 'textarea' || (activeTag === 'input' && document.activeElement.type === 'text')) {
+        const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        if (tag === 'textarea' || (tag === 'input' && document.activeElement.type === 'text')) {
           return;
         }
 
         switch (e.code) {
           case 'Space':
             e.preventDefault();
-            if (AppState.isPrompterActive) {
+            if (App.isPrompterActive) {
               togglePlayPause();
             } else {
-              openPrompterScreen();
+              openPrompter();
             }
             break;
-
           case 'ArrowUp':
             e.preventDefault();
-            if (AppState.isPrompterActive) {
-              AppState.speed = Math.min(1000, AppState.speed + 15);
-              DOM.prompterSpeedNum.value = AppState.speed;
-              DOM.prompterSpeedSlider.value = AppState.speed;
-              DOM.editorSpeedVal.textContent = AppState.speed;
-              saveState();
+            if (App.isPrompterActive) {
+              App.speedLevel = Math.min(10, App.speedLevel + 0.5);
+              UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
+              UI.prompterSpeedSlider.value = App.speedLevel;
+              UI.editorSpeedSlider.value = App.speedLevel;
+              UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
+              UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
+              saveSettings();
             }
             break;
-
           case 'ArrowDown':
             e.preventDefault();
-            if (AppState.isPrompterActive) {
-              AppState.speed = Math.max(1, AppState.speed - 15);
-              DOM.prompterSpeedNum.value = AppState.speed;
-              DOM.prompterSpeedSlider.value = AppState.speed;
-              DOM.editorSpeedVal.textContent = AppState.speed;
-              saveState();
+            if (App.isPrompterActive) {
+              App.speedLevel = Math.max(0.5, App.speedLevel - 0.5);
+              UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
+              UI.prompterSpeedSlider.value = App.speedLevel;
+              UI.editorSpeedSlider.value = App.speedLevel;
+              UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
+              UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
+              saveSettings();
             }
             break;
-
           case 'ArrowLeft':
             e.preventDefault();
-            if (AppState.isPrompterActive) {
-              jumpScroll(-180);
-            }
+            if (App.isPrompterActive) jumpSeconds(-5);
             break;
-
           case 'ArrowRight':
             e.preventDefault();
-            if (AppState.isPrompterActive) {
-              jumpScroll(180);
-            }
+            if (App.isPrompterActive) jumpSeconds(5);
             break;
-
           case 'KeyR':
             e.preventDefault();
-            if (AppState.isPrompterActive) {
-              resetScroll();
-            }
+            if (App.isPrompterActive) resetPrompterScroll();
             break;
-
           case 'KeyF':
             e.preventDefault();
             toggleFullscreen();
             break;
-
           case 'Escape':
             e.preventDefault();
-            if (!DOM.shortcutsModal.classList.contains('hidden')) {
-              DOM.shortcutsModal.classList.add('hidden');
-            } else if (AppState.isPrompterActive) {
-              backToEditorScreen();
+            if (!UI.shortcutsModal.classList.contains('hidden')) {
+              UI.shortcutsModal.classList.add('hidden');
+            } else if (App.isPrompterActive) {
+              closePrompter();
             }
             break;
         }
@@ -1490,17 +1498,46 @@ Chúc các bạn có những buổi ghi hình thật tự tin, truyền cảm h�
     }
 
     /* ============================================================== */
-    /* APPLICATION ENTRY POINT */
+    /* 12. INITIALIZATION */
     /* ============================================================== */
-    function initApp() {
-      loadSavedState();
-      syncUIFromState();
+    function init() {
+      loadSavedData();
+
+      // Sync Editor Inputs
+      UI.scriptInput.value = App.scriptText;
+      UI.editorSpeedSlider.value = App.speedLevel;
+      UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
+      UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
+      UI.editorFontSizeSlider.value = App.fontSize;
+      UI.editorFontSizeVal.textContent = `${App.fontSize}px`;
+      UI.editorLineHeightSlider.value = App.lineHeight;
+      UI.editorLineHeightVal.textContent = `${App.lineHeight}x`;
+      UI.editorCountdownToggle.checked = App.useCountdown;
+      UI.editorEyelineToggle.checked = App.showEyeline;
+      UI.editorFlipX.checked = App.flipX;
+      UI.editorFlipY.checked = App.flipY;
+
+      if (App.mode === 'voice') {
+        UI.tabModeVoice.className = 'py-2 px-2 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition';
+        UI.tabModeSpeed.className = 'py-2 px-2 rounded-lg text-slate-400 hover:text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition';
+      }
+
+      UI.alignBtns.forEach(b => {
+        if (b.dataset.align === App.textAlign) {
+          b.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500');
+          b.classList.remove('bg-slate-800', 'text-slate-300');
+        } else {
+          b.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500');
+          b.classList.add('bg-slate-800', 'text-slate-300');
+        }
+      });
+
+      updateScriptStats();
+      setupInteractions();
       setupEventListeners();
     }
 
-    // Run initialization once DOM is ready
-    window.addEventListener('DOMContentLoaded', initApp);
+    window.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
-
