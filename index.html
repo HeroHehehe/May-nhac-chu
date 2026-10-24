@@ -99,13 +99,31 @@
       opacity: 1;
     }
 
-    /* Highlight current sentence during speech tracking */
-    .speech-highlight {
-      background: linear-gradient(120deg, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.35));
-      border-radius: 8px;
-      padding: 2px 8px;
-      box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
-      transition: all 0.25s ease-out;
+    /* Word-by-word Speech Recognition Highlights */
+    .cue-word {
+      display: inline-block;
+      padding: 0 3px;
+      border-radius: 6px;
+      transition: color 0.15s ease, background 0.15s ease, text-shadow 0.15s ease;
+    }
+    .cue-word.word-spoken {
+      color: #94a3b8; /* Soft slate for read text */
+      opacity: 0.65;
+    }
+    .cue-word.word-current {
+      color: #ffffff;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(168, 85, 247, 0.5));
+      text-shadow: 0 0 20px rgba(99, 102, 241, 0.8);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+      transform: scale(1.04);
+    }
+    .cue-word.word-active-line {
+      color: #ffffff;
+      opacity: 1;
+    }
+    .cue-word.word-pending {
+      color: #cbd5e1;
+      opacity: 0.85;
     }
 
     /* Range slider custom styling */
@@ -133,9 +151,9 @@
             <h1 class="text-xl md:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
               CuePrompter Pro
             </h1>
-            <span class="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">Full-Width Responsive</span>
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">AI Voice Tracking</span>
           </div>
-          <p class="text-xs text-slate-400">Cuộn mượt 60-144fps • Tự động co giãn theo tỉ lệ màn hình Máy tính & iPad</p>
+          <p class="text-xs text-slate-400">Nhận diện giọng nói từng chữ • Tự động lướt dòng siêu mượt LERP không giật</p>
         </div>
       </div>
 
@@ -184,7 +202,7 @@
         </div>
 
         <div class="relative">
-          <textarea id="scriptInput" rows="18" placeholder="Nhập hoặc dán kịch bản của bạn vào đây...&#10;&#10;Mẹo: Bạn có thể chỉnh độ rộng chữ lên 95% - 100% để chữ tràn toàn màn hình trên máy tính và iPad!" class="w-full bg-[#11131a] border border-slate-800 rounded-2xl p-6 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/80 focus:border-transparent transition resize-y font-prompter text-lg leading-relaxed shadow-inner"></textarea>
+          <textarea id="scriptInput" rows="18" placeholder="Nhập hoặc dán kịch bản của bạn vào đây...&#10;&#10;Mẹo: Bạn có thể bật chế độ Theo giọng nói để màn hình tự động bám theo từng từ bạn đọc và nhẹ nhàng chuyển dòng khi bạn nói xong!" class="w-full bg-[#11131a] border border-slate-800 rounded-2xl p-6 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/80 focus:border-transparent transition resize-y font-prompter text-lg leading-relaxed shadow-inner"></textarea>
         </div>
       </div>
 
@@ -244,7 +262,7 @@
         <!-- Speed Preset (Level 0.5 to 10.0) -->
         <div>
           <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
-            <span class="text-slate-300">Tốc độ cuộn</span>
+            <span class="text-slate-300">Tốc độ cuộn đều (khi tắt mic)</span>
             <span class="text-indigo-400 font-mono font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
               Mức <span id="editorSpeedVal">3.5</span> (~<span id="editorSpeedWpm">140</span> wpm)
             </span>
@@ -311,7 +329,7 @@
 
     <!-- Footer -->
     <footer class="pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
-      <p>CuePrompter Pro • Tự động thích ứng mọi kích thước màn hình PC, Laptop, iPad & Tablet</p>
+      <p>CuePrompter Pro • Nhận diện giọng nói chuẩn xác từng chữ & Chuyển dòng LERP siêu mượt</p>
       <p class="flex items-center space-x-2">
         <span>Nhấn <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">Space</kbd> để chạy / dừng</span>
       </p>
@@ -400,7 +418,7 @@
         <!-- Right group: Voice Tracking, Mirror, Theme, Fullscreen -->
         <div class="flex items-center space-x-1.5">
           <!-- Voice Recognition Button -->
-          <button id="btnVoiceToggle" title="Bật/Tắt theo dõi giọng nói tiếng Việt" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center space-x-1.5 border border-slate-700 transition">
+          <button id="btnVoiceToggle" title="Bật/Tắt theo dõi giọng nói tiếng Việt" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center space-x-1.5 border border-slate-700 transition">
             <div id="micIndicator" class="w-2.5 h-2.5 rounded-full bg-slate-500"></div>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
@@ -476,9 +494,9 @@
     </div>
 
     <!-- VOICE STATUS TOAST -->
-    <div id="voiceToast" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-slate-900/95 border border-indigo-500/50 text-xs font-semibold text-indigo-200 shadow-2xl flex items-center space-x-2.5 backdrop-blur-md">
-      <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
-      <span id="voiceToastText">Đang nghe giọng nói...</span>
+    <div id="voiceToast" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 px-5 py-2.5 rounded-full bg-slate-900/95 border border-indigo-500/60 text-xs font-semibold text-indigo-100 shadow-2xl flex items-center space-x-3 backdrop-blur-md ring-1 ring-white/10">
+      <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
+      <span id="voiceToastText">Đang nghe giọng nói tiếng Việt theo từng từ...</span>
     </div>
 
     <!-- ============================================================== -->
@@ -492,7 +510,7 @@
           <!-- Dynamic Full-Width Container (Responsive for PC & iPad) -->
           <div id="prompterContainer" class="mx-auto pt-[30vh] pb-[70vh] transition-all duration-150">
             <div id="prompterTextCanvas" class="font-prompter font-bold tracking-wide transition-all whitespace-pre-wrap">
-              <!-- Script text elements rendered here -->
+              <!-- Script word elements rendered here -->
             </div>
           </div>
         </div>
@@ -554,15 +572,15 @@
 
 
   <!-- ============================================================== -->
-  <!-- 4. CORE ENGINE JAVASCRIPT (GPU COMPOSITOR + FULL WIDTH) -->
+  <!-- 4. CORE ENGINE JAVASCRIPT (WORD-BY-WORD AI + LERP MOTION) -->
   <!-- ============================================================== -->
   <script>
     /**
-     * CuePrompter Pro - Responsive Full-Width GPU Transform Engine
+     * CuePrompter Pro - Word-by-Word Voice Recognition Engine with LERP Smooth Scrolling
      */
     const App = {
       // Configuration
-      contentWidth: 95, // 50% to 100% of screen width (Default 95% full screen)
+      contentWidth: 95, // 50% to 100% of screen width (Default 95%)
       speedLevel: 3.5,  // 0.5 to 10.0
       fontSize: 56,     // 20px to 120px
       lineHeight: 1.7,  // 1.3 to 2.4
@@ -574,11 +592,12 @@
       useCountdown: true,
       mode: 'speed',    // 'speed' or 'voice'
 
-      // Motion State
+      // Motion & Scroll State
       isPlaying: false,
       isPrompterActive: false,
-      currentY: 0,
-      maxY: 0,
+      currentY: 0,      // Actual GPU translate3d position (Float)
+      targetY: 0,       // Target position for Voice Recognition LERP Glide
+      maxY: 0,          // Maximum scroll bound
       rafId: null,
       lastFrameTime: 0,
 
@@ -590,10 +609,12 @@
       countdownInterval: null,
       isCountingDown: false,
 
-      // Voice recognition
+      // Voice recognition & Word Tracking
       recognition: null,
       isVoiceActive: false,
-      speechItems: [],
+      wordsList: [],     // Array of word objects { index, raw, clean, element, top }
+      currentWordIdx: 0, // Current spoken progress pointer (Monotonic forward progression)
+      currentLineTop: -1,
 
       // Script
       scriptText: ''
@@ -609,11 +630,9 @@ Thứ nhất: Tốc độ cuộn chữ đạt độ mượt tuyệt đối 60-14
 
 Thứ hai: Độ rộng văn bản tự động co giãn tràn màn hình theo tỉ lệ của từng thiết bị như iPad, máy tính bàn và laptop, giúp mắt bạn dễ dàng đọc các chữ to mà không bị gò bó ở giữa!
 
-Thứ ba: Bạn có thể dùng chuột lăn (Scroll Wheel) hoặc vuốt cảm ứng để tua kịch bản nhanh chóng mà không làm mất nhịp đọc.
+Thứ ba: Tính năng nhận diện giọng nói tiếng Việt bám sát theo từng chữ bạn phát âm, tự động phát hiện khi đọc xong dòng hiện tại và nhẹ nhàng lướt chuyển sang dòng tiếp theo siêu mượt mà không hề bị giật cục.
 
 Thứ tư: Chế độ đếm ngược 3 giây thông minh giúp bạn hít thở sâu và sẵn sàng thần thái tốt nhất trước khi bấm máy ghi hình.
-
-Thứ năm: Chế độ nhận diện giọng nói tiếng Việt tự động căn chỉnh từng câu bạn nói vào đúng vạch tiêu điểm 30% mắt nhìn.
 
 Chúc các bạn có những thước phim và bài thuyết trình chuyên nghiệp, cuốn hút và thành công rực rỡ!`;
 
@@ -771,8 +790,16 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       return Math.round(level * 40);
     }
 
+    function normalizeVn(str) {
+      if (!str) return '';
+      return str
+        .toLowerCase()
+        .replace(/[.,/#!$%^&*;:{}=\-_`~()?"'“”„…\[\]]/g, '')
+        .trim();
+    }
+
     /* ============================================================== */
-    /* 3. GPU TRANSFORM SCROLL ENGINE (Ultra Smooth 60-144Hz) */
+    /* 3. GPU TRANSFORM & LERP SCROLL ENGINE (Ultra Smooth 60-144Hz) */
     /* ============================================================== */
     function updateGpuTransform() {
       App.currentY = Math.max(0, Math.min(App.maxY, App.currentY));
@@ -783,6 +810,14 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       const viewportHeight = UI.prompterViewport.clientHeight;
       const contentHeight = UI.prompterGpuLayer.scrollHeight;
       App.maxY = Math.max(0, contentHeight - viewportHeight * 0.35);
+
+      // Recompute word layout positions
+      if (App.wordsList && App.wordsList.length > 0) {
+        App.wordsList.forEach(w => {
+          w.top = w.element.offsetTop;
+          w.height = w.element.offsetHeight;
+        });
+      }
     }
 
     function startScrollLoop() {
@@ -832,37 +867,59 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       }
     }
 
+    /**
+     * RENDER FRAME LOOP:
+     * - In 'voice' mode: Uses exponential LERP smoothing to glide smoothly towards targetY (no snapping!).
+     * - In 'speed' mode: Uses delta-time pixel velocity.
+     */
     function renderFrame(now) {
       if (!App.isPlaying) return;
 
       const deltaMs = now - App.lastFrameTime;
       App.lastFrameTime = now;
-
       const safeDeltaMs = Math.min(deltaMs, 60);
-      const pxPerSec = getPixelsPerSecond(App.speedLevel);
-      const increment = (pxPerSec * safeDeltaMs) / 1000;
 
-      App.currentY += increment;
+      if (App.isVoiceActive) {
+        // LERP Smooth Damping to targetY (Silky smooth line transition)
+        const diff = App.targetY - App.currentY;
+        if (Math.abs(diff) > 0.4) {
+          // Exponential decay factor (ease-out over ~350ms)
+          const factor = 1 - Math.exp(-6.5 * (safeDeltaMs / 1000));
+          App.currentY += diff * factor;
+          updateGpuTransform();
+        }
+      } else {
+        // Standard Constant Speed Scroll
+        const pxPerSec = getPixelsPerSecond(App.speedLevel);
+        const increment = (pxPerSec * safeDeltaMs) / 1000;
+        App.currentY += increment;
 
-      if (App.currentY >= App.maxY) {
-        App.currentY = App.maxY;
+        if (App.currentY >= App.maxY) {
+          App.currentY = App.maxY;
+          updateGpuTransform();
+          pauseScrollLoop();
+          return;
+        }
+
         updateGpuTransform();
-        pauseScrollLoop();
-        return;
       }
 
-      updateGpuTransform();
       App.rafId = requestAnimationFrame(renderFrame);
     }
 
     function resetPrompterScroll() {
       App.currentY = 0;
+      App.targetY = 0;
+      App.currentWordIdx = 0;
+      App.currentLineTop = -1;
+      updateWordVisuals();
       updateGpuTransform();
     }
 
     function jumpSeconds(seconds) {
       const pxPerSec = getPixelsPerSecond(App.speedLevel);
       App.currentY += pxPerSec * seconds;
+      App.targetY = App.currentY;
       updateGpuTransform();
     }
 
@@ -931,12 +988,14 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 6. CANVAS & FULL-WIDTH SCALING */
+    /* 6. WORD-BY-WORD CANVAS & RESPONSIVE SCALING */
     /* ============================================================== */
     function renderPrompterCanvas() {
       const text = App.scriptText.trim();
       UI.prompterTextCanvas.innerHTML = '';
-      App.speechItems = [];
+      App.wordsList = [];
+      App.currentWordIdx = 0;
+      App.currentLineTop = -1;
 
       if (!text) {
         UI.prompterTextCanvas.innerHTML = '<span class="text-slate-500 italic">Chưa có nội dung kịch bản. Hãy quay lại soạn thảo kịch bản!</span>';
@@ -944,7 +1003,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       }
 
       const paragraphs = text.split('\n');
-      let globalIdx = 0;
+      let wordIndex = 0;
 
       paragraphs.forEach(para => {
         if (!para.trim()) {
@@ -957,51 +1016,46 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         const p = document.createElement('p');
         p.className = 'mb-8';
 
-        const segments = para.split(/([.?!,;\n]+)/g);
-        let currentChunk = '';
+        // Split paragraph into individual words while preserving whitespace
+        const tokens = para.trim().split(/\s+/);
+        tokens.forEach(tok => {
+          const clean = normalizeVn(tok);
+          if (!clean) return;
 
-        for (let i = 0; i < segments.length; i++) {
-          currentChunk += segments[i];
-          if (i % 2 === 1 || i === segments.length - 1) {
-            const clean = currentChunk.trim();
-            if (clean) {
-              const span = document.createElement('span');
-              span.textContent = currentChunk + ' ';
-              span.id = `cue-chunk-${globalIdx}`;
-              span.className = 'prompter-chunk inline transition-all duration-200';
-              p.appendChild(span);
+          const span = document.createElement('span');
+          span.textContent = tok + ' ';
+          span.id = `cue-word-${wordIndex}`;
+          span.dataset.index = wordIndex;
+          span.className = 'cue-word word-pending';
+          p.appendChild(span);
 
-              App.speechItems.push({
-                index: globalIdx,
-                text: clean.toLowerCase(),
-                element: span
-              });
-              globalIdx++;
-            }
-            currentChunk = '';
-          }
-        }
+          App.wordsList.push({
+            index: wordIndex,
+            raw: tok,
+            clean: clean,
+            element: span,
+            top: 0
+          });
+          wordIndex++;
+        });
 
         UI.prompterTextCanvas.appendChild(p);
       });
 
       applyCanvasStyles();
-      setTimeout(calculateMaxScroll, 60);
+      setTimeout(calculateMaxScroll, 70);
     }
 
     function applyCanvasStyles() {
-      // Dynamic Full-Width Container Sizing
       UI.prompterContainer.style.width = `${App.contentWidth}%`;
       UI.prompterContainer.style.maxWidth = `${App.contentWidth}vw`;
       UI.prompterContainer.style.paddingLeft = '1rem';
       UI.prompterContainer.style.paddingRight = '1rem';
 
-      // Typography
       UI.prompterTextCanvas.style.fontSize = `${App.fontSize}px`;
       UI.prompterTextCanvas.style.lineHeight = App.lineHeight;
       UI.prompterTextCanvas.style.textAlign = App.textAlign;
 
-      // Controls sync
       UI.prompterWidthDisplay.textContent = `${App.contentWidth}%`;
       UI.prompterWidthSlider.value = App.contentWidth;
       UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
@@ -1054,7 +1108,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 7. WEB SPEECH API (SMART VOICE FOLLOW) */
+    /* 7. HIGH-PRECISION SPEECH ENGINE & WORD PROGRESSION */
     /* ============================================================== */
     function initSpeechEngine() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1075,20 +1129,22 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
           UI.micIndicator.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
           UI.btnVoiceToggle.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500');
           UI.voiceToast.classList.remove('hidden');
-          UI.voiceToastText.textContent = 'Đang nhận diện giọng nói tiếng Việt...';
+          UI.voiceToastText.textContent = 'Đang lắng nghe giọng nói theo từng chữ...';
         };
 
         sr.onresult = (event) => {
-          let heard = '';
+          let heardChunk = '';
           for (let i = event.resultIndex; i < event.results.length; ++i) {
-            heard += event.results[i][0].transcript;
+            heardChunk += event.results[i][0].transcript + ' ';
           }
-          heard = heard.trim().toLowerCase();
-          if (heard) matchSpeechToCanvas(heard);
+          heardChunk = heardChunk.trim();
+          if (heardChunk) {
+            processHeardWords(heardChunk);
+          }
         };
 
         sr.onerror = (e) => {
-          console.warn('Speech error:', e.error);
+          console.warn('Speech error notice:', e.error);
         };
 
         sr.onend = () => {
@@ -1124,41 +1180,83 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       }
     }
 
-    function matchSpeechToCanvas(heardPhrase) {
-      if (!App.speechItems || App.speechItems.length === 0) return;
+    /**
+     * Process Spoken Words:
+     * - Searches sequentially in a sliding forward window around currentWordIdx.
+     * - When words on the current line finish and move to the next line,
+     *   sets targetY so the LERP frame loop glides to the new line smoothly!
+     */
+    function processHeardWords(transcript) {
+      if (!App.wordsList || App.wordsList.length === 0) return;
 
-      const words = heardPhrase.split(/\s+/).filter(w => w.length > 1);
-      if (words.length === 0) return;
+      const rawTokens = transcript.split(/\s+/).filter(w => w.length > 0);
+      const cleanTokens = rawTokens.map(w => normalizeVn(w)).filter(w => w.length > 0);
+      if (cleanTokens.length === 0) return;
 
-      let bestItem = null;
-      let highestScore = 0;
+      // Scan through heard tokens
+      for (let t = 0; t < cleanTokens.length; t++) {
+        const spokenWord = cleanTokens[t];
+        // Look ahead within a forward window of 7 words to allow minor skipped filler words
+        const searchStart = App.currentWordIdx;
+        const searchEnd = Math.min(App.wordsList.length, App.currentWordIdx + 7);
 
-      App.speechItems.forEach(item => {
-        let score = 0;
-        words.forEach(w => {
-          if (item.text.includes(w)) score++;
-        });
-        if (score > highestScore && score >= 2) {
-          highestScore = score;
-          bestItem = item;
+        for (let i = searchStart; i < searchEnd; i++) {
+          const scriptItem = App.wordsList[i];
+          if (scriptItem.clean === spokenWord || (scriptItem.clean.length > 3 && spokenWord.includes(scriptItem.clean))) {
+            // Match found! Advance word pointer
+            App.currentWordIdx = i + 1;
+            onWordRecognized(i);
+            break;
+          }
+        }
+      }
+
+      UI.voiceToastText.textContent = `Đang đọc: "${transcript.slice(-30)}"`;
+    }
+
+    function onWordRecognized(matchedIdx) {
+      const matchedItem = App.wordsList[matchedIdx];
+      if (!matchedItem) return;
+
+      // Update styling for spoken/current/pending words
+      updateWordVisuals();
+
+      // Read physical top position of current word
+      const wordTop = matchedItem.element.offsetTop;
+
+      // If the word has moved to a new line (or initial line)
+      if (Math.abs(wordTop - App.currentLineTop) > 10) {
+        App.currentLineTop = wordTop;
+        // The target scroll position places this line exactly at the 30% eye-line marker!
+        const eyeLineTargetY = window.innerHeight * 0.30;
+        App.targetY = Math.max(0, Math.min(App.maxY, wordTop - eyeLineTargetY));
+      }
+    }
+
+    function updateWordVisuals() {
+      if (!App.wordsList) return;
+
+      const currentIdx = App.currentWordIdx - 1;
+      const activeLineTop = (currentIdx >= 0 && App.wordsList[currentIdx]) ? App.wordsList[currentIdx].element.offsetTop : -1;
+
+      App.wordsList.forEach((item, idx) => {
+        item.element.classList.remove('word-spoken', 'word-current', 'word-active-line', 'word-pending');
+
+        if (idx === currentIdx) {
+          // Current spoken word
+          item.element.classList.add('word-current');
+        } else if (idx < currentIdx) {
+          // Already read word
+          item.element.classList.add('word-spoken');
+        } else {
+          // If on the same line as current word, mark as active line
+          if (activeLineTop !== -1 && Math.abs(item.element.offsetTop - activeLineTop) <= 8) {
+            item.element.classList.add('word-active-line');
+          } else {
+            item.element.classList.add('word-pending');
+          }
         }
       });
-
-      if (bestItem && bestItem.element) {
-        document.querySelectorAll('.speech-highlight').forEach(el => el.classList.remove('speech-highlight'));
-        bestItem.element.classList.add('speech-highlight');
-
-        const rect = bestItem.element.getBoundingClientRect();
-        const targetY = window.innerHeight * 0.30;
-        const diff = rect.top - targetY;
-
-        if (Math.abs(diff) > 15) {
-          App.currentY += diff;
-          updateGpuTransform();
-        }
-
-        UI.voiceToastText.textContent = `Khớp: "${heardPhrase.slice(-28)}"`;
-      }
     }
 
     /* ============================================================== */
@@ -1168,6 +1266,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       UI.prompterViewport.addEventListener('wheel', (e) => {
         e.preventDefault();
         App.currentY += e.deltaY * 0.85;
+        App.targetY = App.currentY;
         updateGpuTransform();
       }, { passive: false });
 
@@ -1185,6 +1284,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         if (e.touches.length === 1) {
           const delta = startTouchY - e.touches[0].clientY;
           App.currentY = startScrollY + delta;
+          App.targetY = App.currentY;
           updateGpuTransform();
         }
       }, { passive: true });
@@ -1201,7 +1301,6 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         }
       });
 
-      // Recalculate dimensions on screen resize / orientation change (iPad rotation)
       window.addEventListener('resize', () => {
         calculateMaxScroll();
         applyCanvasStyles();
@@ -1301,7 +1400,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         saveSettings();
       });
 
-      // Width Sliders (Độ rộng chữ 50% - 100%)
+      // Width Sliders (50% - 100%)
       UI.editorWidthSlider.addEventListener('input', (e) => {
         App.contentWidth = parseInt(e.target.value, 10);
         UI.editorWidthVal.textContent = `${App.contentWidth}%${App.contentWidth >= 90 ? ' (Tràn màn)' : ''}`;
