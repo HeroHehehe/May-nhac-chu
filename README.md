@@ -94,3 +94,4 @@ git push -u origin main
   - Fullscreen API
   - Web Storage API (`localStorage`)
 - **Fonts**: Be Vietnam Pro & Inter (Google Fonts)
+
