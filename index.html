@@ -99,28 +99,27 @@
       opacity: 1;
     }
 
-    /* High-Performance Smooth Sentence Highlighting */
-    .cue-clause {
+    /* Sentence / Clause Level Highlighting (Zero DOM lag) */
+    .cue-sentence {
+      transition: color 0.25s ease, opacity 0.25s ease, text-shadow 0.25s ease, transform 0.25s ease;
       display: inline;
-      padding: 3px 6px;
-      border-radius: 8px;
-      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 2px 4px;
+      border-radius: 6px;
     }
-    .cue-clause.clause-past {
+    .cue-sentence.sentence-passed {
       color: #64748b;
-      opacity: 0.3; /* Lock past text with soft dim */
-      text-shadow: none;
+      opacity: 0.35; /* Past sentences dim down completely */
     }
-    .cue-clause.clause-active {
+    .cue-sentence.sentence-active {
       color: #ffffff;
       opacity: 1;
-      background: linear-gradient(120deg, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.28));
-      box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
-      border-bottom: 3px solid rgba(129, 140, 248, 0.9);
+      background: linear-gradient(120deg, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.3));
+      box-shadow: 0 0 25px rgba(99, 102, 241, 0.35);
+      border-bottom: 2px solid rgba(129, 140, 248, 0.8);
       font-weight: 800;
     }
-    .cue-clause.clause-upcoming {
-      color: #e2e8f0;
+    .cue-sentence.sentence-upcoming {
+      color: #cbd5e1;
       opacity: 0.85;
     }
 
@@ -149,9 +148,9 @@
             <h1 class="text-xl md:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
               CuePrompter Pro
             </h1>
-            <span class="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">Dual-Anchor AI</span>
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">Head-Tail Smart AI</span>
           </div>
-          <p class="text-xs text-slate-400">Thuật toán bám giọng nói theo cụm câu N-Gram • Tuyệt đối không nhảy lùi lung tung • Bước chỉnh 0.1</p>
+          <p class="text-xs text-slate-400">Bắt đầu & kết câu thông minh • Chuyển dòng siêu nhanh khi đọc lướt • Bước chỉnh 0.1</p>
         </div>
       </div>
 
@@ -200,7 +199,7 @@
         </div>
 
         <div class="relative">
-          <textarea id="scriptInput" rows="18" placeholder="Nhập hoặc dán kịch bản của bạn vào đây...&#10;&#10;Mẹo: Ngắt thành các câu ngắn để thuật toán AI bám giọng nói chính xác và tự động lướt dòng mượt mà nhất!" class="w-full bg-[#11131a] border border-slate-800 rounded-2xl p-6 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/80 focus:border-transparent transition resize-y font-prompter text-lg leading-relaxed shadow-inner"></textarea>
+          <textarea id="scriptInput" rows="18" placeholder="Nhập hoặc dán kịch bản của bạn vào đây...&#10;&#10;Mẹo: Bạn có thể bật chế độ Theo giọng nói để màn hình tự động nhận diện đầu/cuối câu và lướt mượt mà sang câu tiếp theo!" class="w-full bg-[#11131a] border border-slate-800 rounded-2xl p-6 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/80 focus:border-transparent transition resize-y font-prompter text-lg leading-relaxed shadow-inner"></textarea>
         </div>
       </div>
 
@@ -257,7 +256,7 @@
           </div>
         </div>
 
-        <!-- Speed Preset (Level 0.5 to 10.0 with 0.1 precision) -->
+        <!-- Speed Preset (Level 0.5 to 10.0 with granular 0.1 step) -->
         <div>
           <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
             <span class="text-slate-300">Tốc độ cuộn (Bước 0.1)</span>
@@ -266,6 +265,11 @@
             </span>
           </div>
           <input type="range" id="editorSpeedSlider" min="0.5" max="10" step="0.1" value="3.5" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+            <span>0.5 (Chậm)</span>
+            <span>3.5 (Chuẩn)</span>
+            <span>10.0 (Nhanh)</span>
+          </div>
         </div>
 
         <!-- Line Height -->
@@ -327,7 +331,7 @@
 
     <!-- Footer -->
     <footer class="pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
-      <p>CuePrompter Pro • Thuật toán Dual-Anchor N-Gram ổn định & chính xác tuyệt đối</p>
+      <p>CuePrompter Pro • Nhận diện đầu/cuối câu mượt mà • Tốc độ bước mịn 0.1</p>
       <p class="flex items-center space-x-2">
         <span>Nhấn <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">Space</kbd> để chạy / dừng</span>
       </p>
@@ -493,7 +497,7 @@
 
     <!-- VOICE STATUS TOAST -->
     <div id="voiceToast" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 px-5 py-2.5 rounded-full bg-slate-900/95 border border-indigo-500/60 text-xs font-semibold text-indigo-100 shadow-2xl flex items-center space-x-3 backdrop-blur-md ring-1 ring-white/10">
-      <div id="voiceToastDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+      <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
       <span id="voiceToastText">Đang nghe giọng nói...</span>
     </div>
 
@@ -570,11 +574,11 @@
 
 
   <!-- ============================================================== -->
-  <!-- 4. CORE ENGINE JAVASCRIPT (DUAL-ANCHOR AI + SPEED 0.1) -->
+  <!-- 4. CORE ENGINE JAVASCRIPT (HEAD-TAIL AI + LERP MOTION) -->
   <!-- ============================================================== -->
   <script>
     /**
-     * CuePrompter Pro - Dual-Anchor N-Gram Voice Recognition Engine
+     * CuePrompter Pro - Sentence Head-Tail Voice AI with Zero DOM Lag & 0.1 Speed Precision
      */
     const App = {
       // Configuration
@@ -607,12 +611,11 @@
       countdownInterval: null,
       isCountingDown: false,
 
-      // Speech Recognition & Strict Alignment Pointer
+      // Voice recognition & Sentence Head-Tail Tracking
       recognition: null,
       isVoiceActive: false,
-      clausesList: [],       // Array of clause chunks
-      currentClauseIdx: 0,   // Strict monotonic forward pointer
-      lastHeardTime: 0,
+      sentencesList: [],     // Array of sentence items { index, raw, clean, headWords, tailWords, element, top }
+      currentSentenceIdx: 0, // Strict forward-only pointer (Past sentences locked out)
 
       // Script
       scriptText: ''
@@ -628,7 +631,7 @@ Thứ nhất: Tốc độ cuộn chữ đạt độ mượt tuyệt đối 60-14
 
 Thứ hai: Độ rộng văn bản tự động co giãn tràn màn hình theo tỉ lệ của từng thiết bị như iPad, máy tính bàn và laptop, giúp mắt bạn dễ dàng đọc các chữ to mà không bị gò bó ở giữa!
 
-Thứ ba: Thuật toán nhận diện giọng nói Dual-Anchor N-Gram cực kỳ thông minh, chỉ tiến lên phía trước theo ngữ cảnh cụm từ và tuyệt đối không bao giờ bị nhảy lùi hay nhảy loạn xạ!
+Thứ ba: Thuật toán nhận diện giọng nói thông minh chỉ cần bắt vài chữ đầu câu hoặc cuối câu, giúp nhận diện cực nhanh, không gây đơ lag máy và tự động lướt ngay sang câu tiếp theo khi bạn đọc nhanh!
 
 Thứ tư: Nút tăng giảm tốc độ với bước nhảy siêu mịn 0.1, giúp bạn tinh chỉnh tốc độ đọc chuẩn xác đến từng miligiây.
 
@@ -698,7 +701,6 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       countdownNumber: document.getElementById('countdownNumber'),
       btnSkipCountdown: document.getElementById('btnSkipCountdown'),
       voiceToast: document.getElementById('voiceToast'),
-      voiceToastDot: document.getElementById('voiceToastDot'),
       voiceToastText: document.getElementById('voiceToastText'),
       prompterViewport: document.getElementById('prompterViewport'),
       prompterMirrorWrapper: document.getElementById('prompterMirrorWrapper'),
@@ -763,7 +765,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 2. STATS & STRING CLEANING */
+    /* 2. STATS & PARSING */
     /* ============================================================== */
     function updateScriptStats() {
       const text = UI.scriptInput.value.trim();
@@ -789,14 +791,10 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       return Math.round(level * 40);
     }
 
-    /**
-     * Clean Vietnamese text: lowercase, remove punctuation, collapse extra spaces
-     */
-    function cleanVn(str) {
+    function normalizeVn(str) {
       if (!str) return '';
       return str
         .toLowerCase()
-        .normalize('NFC')
         .replace(/[.,/#!$%^&*;:{}=\-_`~()?"'“”„…\[\]]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
@@ -815,11 +813,11 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       const contentHeight = UI.prompterGpuLayer.scrollHeight;
       App.maxY = Math.max(0, contentHeight - viewportHeight * 0.35);
 
-      // Pre-cache top positions of all clause elements
-      if (App.clausesList && App.clausesList.length > 0) {
-        App.clausesList.forEach(c => {
-          c.top = c.element.offsetTop;
-          c.height = c.element.offsetHeight;
+      // Pre-cache sentence top coordinates once during render/resize
+      if (App.sentencesList && App.sentencesList.length > 0) {
+        App.sentencesList.forEach(s => {
+          s.top = s.element.offsetTop;
+          s.height = s.element.offsetHeight;
         });
       }
     }
@@ -873,8 +871,9 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
 
     /**
      * RENDER FRAME LOOP:
-     * - Voice Mode: Continuous LERP glide towards targetY.
-     * - Speed Mode: Constant velocity scrolling.
+     * - In 'voice' mode: Uses LERP exponential smoothing towards targetY.
+     *   When user reads fast, factor glides smoothly and quickly to the new sentence!
+     * - In 'speed' mode: Uses constant pixel velocity (with 0.1 precision).
      */
     function renderFrame(now) {
       if (!App.isPlaying) return;
@@ -884,15 +883,16 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       const safeDeltaMs = Math.min(deltaMs, 60);
 
       if (App.isVoiceActive) {
-        // Silky smooth LERP glide towards targetY (factor ~4.5 for buttery ease)
+        // LERP Smooth Glide to targetY
         const diff = App.targetY - App.currentY;
         if (Math.abs(diff) > 0.4) {
-          const factor = 1 - Math.exp(-4.5 * (safeDeltaMs / 1000));
+          // Smooth glide factor (~4.8 for silky smooth line transition)
+          const factor = 1 - Math.exp(-4.8 * (safeDeltaMs / 1000));
           App.currentY += diff * factor;
           updateGpuTransform();
         }
       } else {
-        // Normal constant speed scroll
+        // Standard Constant Speed Scroll
         const pxPerSec = getPixelsPerSecond(App.speedLevel);
         const increment = (pxPerSec * safeDeltaMs) / 1000;
         App.currentY += increment;
@@ -913,8 +913,8 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     function resetPrompterScroll() {
       App.currentY = 0;
       App.targetY = 0;
-      App.currentClauseIdx = 0;
-      updateClauseVisuals();
+      App.currentSentenceIdx = 0;
+      updateSentenceVisuals();
       updateGpuTransform();
     }
 
@@ -990,17 +990,13 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 6. DUAL-ANCHOR CLAUSE SEGMENTATION */
+    /* 6. SENTENCE-BASED CANVAS & HEAD/TAIL TOKEN EXTRACTION */
     /* ============================================================== */
-    /**
-     * Splits script into coherent, natural clauses (vế câu / câu ngắn).
-     * Pre-indexes head/tail bi-grams and tri-grams so false substring matching is impossible.
-     */
     function renderPrompterCanvas() {
       const text = App.scriptText.trim();
       UI.prompterTextCanvas.innerHTML = '';
-      App.clausesList = [];
-      App.currentClauseIdx = 0;
+      App.sentencesList = [];
+      App.currentSentenceIdx = 0;
 
       if (!text) {
         UI.prompterTextCanvas.innerHTML = '<span class="text-slate-500 italic">Chưa có nội dung kịch bản. Hãy quay lại soạn thảo kịch bản!</span>';
@@ -1008,7 +1004,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       }
 
       const paragraphs = text.split('\n');
-      let clauseCounter = 0;
+      let sentenceIndex = 0;
 
       paragraphs.forEach(para => {
         if (!para.trim()) {
@@ -1021,56 +1017,54 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         const p = document.createElement('p');
         p.className = 'mb-8';
 
-        // Split paragraph by logical boundaries: . , ? ! ; : or newline
-        const rawSegments = para.split(/([.,!?;:\n]+)/g);
-        let buffer = '';
+        // Split paragraph into logical sentences and clauses (by . , ? ! ; :)
+        const segments = para.split(/([.!?;:\n]+)/g);
+        let accumulatedClause = '';
 
-        for (let i = 0; i < rawSegments.length; i++) {
-          buffer += rawSegments[i];
-          if (i % 2 === 1 || i === rawSegments.length - 1) {
-            const rawClause = buffer.trim();
+        for (let i = 0; i < segments.length; i++) {
+          accumulatedClause += segments[i];
+
+          // If ending punctuation or end of paragraph
+          if (i % 2 === 1 || i === segments.length - 1) {
+            const rawClause = accumulatedClause.trim();
             if (rawClause) {
-              const cleanWords = cleanVn(rawClause).split(' ').filter(w => w.length > 0);
+              const cleanWords = normalizeVn(rawClause).split(/\s+/).filter(w => w.length > 0);
 
-              // Minimum 2 words to form an anchor clause
-              if (cleanWords.length >= 2) {
+              if (cleanWords.length > 0) {
+                // Extract head words (first 2-3 words) and tail words (last 2-3 words)
                 const headWords = cleanWords.slice(0, 3);
                 const tailWords = cleanWords.slice(-3);
 
-                // Build 2-gram arrays for both head and tail
-                const headBigrams = [];
-                for (let k = 0; k < headWords.length - 1; k++) {
-                  headBigrams.push(`${headWords[k]} ${headWords[k+1]}`);
-                }
-                const tailBigrams = [];
-                for (let k = 0; k < tailWords.length - 1; k++) {
-                  tailBigrams.push(`${tailWords[k]} ${tailWords[k+1]}`);
-                }
-
                 const span = document.createElement('span');
                 span.textContent = rawClause + ' ';
-                span.id = `cue-clause-${clauseCounter}`;
-                span.dataset.index = clauseCounter;
-                span.className = clauseCounter === 0 ? 'cue-clause clause-active' : 'cue-clause clause-upcoming';
+                span.id = `cue-sentence-${sentenceIndex}`;
+                span.dataset.index = sentenceIndex;
+                span.className = (sentenceIndex === 0 ? 'cue-sentence sentence-active' : 'cue-sentence sentence-upcoming') + ' cursor-pointer hover:opacity-100 transition-all';
+                
+                const clickTargetIdx = sentenceIndex;
+                span.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  advanceToSentence(clickTargetIdx, true);
+                });
                 p.appendChild(span);
 
-                App.clausesList.push({
-                  index: clauseCounter,
+                App.sentencesList.push({
+                  index: sentenceIndex,
                   raw: rawClause,
                   clean: cleanWords.join(' '),
-                  words: cleanWords,
-                  headBigrams: headBigrams, // e.g. ["chào mừng", "mừng quý"]
-                  tailBigrams: tailBigrams, // e.g. ["chương trình", "theo dõi"]
-                  headPhrase: headWords.join(' '),
-                  tailPhrase: tailWords.join(' '),
+                  cleanWords: cleanWords,
+                  headWords: headWords,
+                  tailWords: tailWords,
+                  headString: headWords.join(' '),
+                  tailString: tailWords.join(' '),
                   element: span,
                   top: 0
                 });
 
-                clauseCounter++;
+                sentenceIndex++;
               }
             }
-            buffer = '';
+            accumulatedClause = '';
           }
         }
 
@@ -1143,7 +1137,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 7. DUAL-ANCHOR N-GRAM VOICE ENGINE */
+    /* 7. HEAD-TAIL VOICE ENGINE (Zero DOM Lag & Forward Leap) */
     /* ============================================================== */
     function initSpeechEngine() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1164,25 +1158,22 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
           UI.micIndicator.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
           UI.btnVoiceToggle.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500');
           UI.voiceToast.classList.remove('hidden');
-          UI.voiceToastDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
-          UI.voiceToastText.textContent = 'Đang nhận diện giọng nói (Chế độ bám theo cụm câu N-Gram)...';
+          UI.voiceToastText.textContent = 'Đang nhận diện giọng nói (Đầu/Cuối câu thông minh)...';
         };
 
         sr.onresult = (event) => {
-          // Extract the latest spoken window (interim or final)
-          let recentTranscript = '';
-          const startIdx = Math.max(0, event.results.length - 2);
-          for (let i = startIdx; i < event.results.length; ++i) {
-            recentTranscript += event.results[i][0].transcript + ' ';
+          let heardChunk = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            heardChunk += event.results[i][0].transcript + ' ';
           }
-          recentTranscript = cleanVn(recentTranscript);
-          if (recentTranscript) {
-            evaluateVoicePosition(recentTranscript);
+          heardChunk = heardChunk.trim();
+          if (heardChunk) {
+            processHeardTranscript(heardChunk);
           }
         };
 
         sr.onerror = (e) => {
-          console.warn('Speech notice:', e.error);
+          console.warn('Speech error notice:', e.error);
         };
 
         sr.onend = () => {
@@ -1218,85 +1209,106 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       }
     }
 
+    // Speech recognition state
+    App.lastTransitionTimestamp = 0;
+
     /**
-     * Dual-Anchor N-Gram Evaluation Logic:
-     * 1. Never matches past clauses (< App.currentClauseIdx).
-     * 2. Checks current clause tail bigrams: if user says the end of current clause, advance to next (+1).
-     * 3. Checks look-ahead clauses (current+1 to current+3) for head bigrams: if matched, fast-forward leaps smoothly!
-     * 4. Multi-word phrase matching completely prevents single-word false triggers.
+     * Strict Tail-Only Voice Processor:
+     * - ONLY checks the LAST FEW WORDS of the CURRENT active sentence.
+     * - ZERO look-ahead! Never leaps ahead into future sentences.
+     * - When you pause, breathe, or cough, it STAYS locked on the current sentence.
+     * - ONLY advances (+1 step) when you actually speak the tail of the current sentence!
+     * - Includes 1.2s transition cooldown to prevent double-skipping.
      */
-    function evaluateVoicePosition(spokenText) {
-      if (!App.clausesList || App.clausesList.length === 0) return;
+    function processHeardTranscript(transcript) {
+      if (!App.sentencesList || App.sentencesList.length === 0) return;
 
-      const curIdx = App.currentClauseIdx;
-      const curClause = App.clausesList[curIdx];
-      App.lastHeardTime = performance.now();
+      const cleanSpoken = normalizeVn(transcript);
+      if (!cleanSpoken) return;
 
-      // Case 1: Check if current clause is finishing (Tail Anchor match)
-      if (curClause) {
-        // Direct tail phrase match OR matching any tail 2-gram
-        const matchedTail = (curClause.tailPhrase.length > 3 && spokenText.includes(curClause.tailPhrase)) ||
-          curClause.tailBigrams.some(bg => spokenText.includes(bg));
+      const currentIdx = App.currentSentenceIdx;
+      const currentSentence = App.sentencesList[currentIdx];
+      if (!currentSentence) return;
 
-        if (matchedTail) {
-          // Finished current clause -> advance to next!
-          advanceToClause(curIdx + 1);
-          UI.voiceToastText.textContent = `Khớp hết câu: "${curClause.raw.slice(-26)}"`;
-          return;
+      // Cooldown guard: cannot finish a new sentence within 1.2s of starting it
+      if (Date.now() - App.lastTransitionTimestamp < 1200) {
+        return;
+      }
+
+      // Determine tail phrase of the CURRENT sentence
+      const words = currentSentence.cleanWords;
+      if (!words || words.length === 0) return;
+
+      let isTailMatched = false;
+
+      if (words.length <= 2) {
+        // Very short sentence: match the exact sentence string
+        isTailMatched = cleanSpoken.includes(words.join(' '));
+      } else {
+        // Multi-word sentence: construct tail 2-gram and 3-gram
+        const lastTwo = words.slice(-2).join(' ');   // e.g. "chương trình"
+        const lastThree = words.slice(-3).join(' '); // e.g. "dõi chương trình"
+
+        // Check if spoken speech contains the continuous tail phrase
+        if (cleanSpoken.includes(lastThree) || cleanSpoken.includes(lastTwo)) {
+          isTailMatched = true;
+        } else {
+          // Fallback: check if the final 2 words both appear in the recent spoken words
+          const finalWord = words[words.length - 1];
+          const secondFinalWord = words[words.length - 2];
+          if (cleanSpoken.includes(finalWord) && cleanSpoken.includes(secondFinalWord)) {
+            isTailMatched = true;
+          }
         }
       }
 
-      // Case 2: Check if speaker is reading fast ahead (Head Anchor match in upcoming clauses)
-      const lookAheadMax = Math.min(App.clausesList.length, curIdx + 4);
-      for (let nextIdx = curIdx + 1; nextIdx < lookAheadMax; nextIdx++) {
-        const candidate = App.clausesList[nextIdx];
-
-        // Check if spoken text contains candidate's head phrase OR candidate's head 2-grams
-        const matchedHead = (candidate.headPhrase.length > 3 && spokenText.includes(candidate.headPhrase)) ||
-          candidate.headBigrams.some(bg => spokenText.includes(bg));
-
-        if (matchedHead) {
-          // Leap forward smoothly to this candidate clause!
-          advanceToClause(nextIdx);
-          UI.voiceToastText.textContent = `Lướt tới câu ${nextIdx + 1}: "${candidate.raw.slice(0, 24)}..."`;
-          return;
+      if (isTailMatched) {
+        // User spoke the end of the current sentence!
+        // Move to the next sentence (EXACTLY +1 step, never skips multiple sentences)
+        App.lastTransitionTimestamp = Date.now();
+        const nextIdx = currentIdx + 1;
+        if (nextIdx < App.sentencesList.length) {
+          advanceToSentence(nextIdx);
+          UI.voiceToastText.textContent = `Xong câu ${currentIdx + 1} -> Lướt sang câu tiếp theo...`;
+        } else {
+          UI.voiceToastText.textContent = `Đã đọc xong kịch bản!`;
         }
       }
     }
 
-    function advanceToClause(newIdx) {
-      if (newIdx >= App.clausesList.length) newIdx = App.clausesList.length - 1;
-      // Monotonic progression: NEVER go backwards!
-      if (newIdx <= App.currentClauseIdx && App.currentClauseIdx !== 0) return;
+    function advanceToSentence(newIdx, isManual = false) {
+      if (newIdx >= App.sentencesList.length) newIdx = App.sentencesList.length - 1;
+      if (!isManual && newIdx <= App.currentSentenceIdx && App.currentSentenceIdx !== 0) return; // Strict forward progress
 
-      App.currentClauseIdx = newIdx;
-      updateClauseVisuals();
+      App.currentSentenceIdx = newIdx;
+      App.lastTransitionTimestamp = Date.now();
+      updateSentenceVisuals();
 
-      const activeClause = App.clausesList[newIdx];
-      if (activeClause) {
-        // Center the active clause at the 30% eye-line guide
-        const eyeLineY = window.innerHeight * 0.30;
-        App.targetY = Math.max(0, Math.min(App.maxY, activeClause.top - eyeLineY));
+      const activeItem = App.sentencesList[newIdx];
+      if (activeItem) {
+        // Use pre-cached top position (Zero DOM query!)
+        const targetScroll = activeItem.top - (window.innerHeight * 0.30);
+        App.targetY = Math.max(0, Math.min(App.maxY, targetScroll));
       }
     }
 
-    function updateClauseVisuals() {
-      if (!App.clausesList) return;
+    function updateSentenceVisuals() {
+      if (!App.sentencesList) return;
 
-      const curIdx = App.currentClauseIdx;
+      const curIdx = App.currentSentenceIdx;
 
-      App.clausesList.forEach((item, idx) => {
-        item.element.classList.remove('clause-past', 'clause-active', 'clause-upcoming');
+      App.sentencesList.forEach((item, idx) => {
+        item.element.classList.remove('sentence-passed', 'sentence-active', 'sentence-upcoming');
 
         if (idx < curIdx) {
-          // Past clause: locked, dimmed
-          item.element.classList.add('clause-past');
+          // Past sentence: permanently dimmed, locked out
+          item.element.classList.add('sentence-passed');
         } else if (idx === curIdx) {
-          // Active clause: glowing
-          item.element.classList.add('clause-active');
+          // Current active sentence: glowing highlight
+          item.element.classList.add('sentence-active');
         } else {
-          // Upcoming: clear text
-          item.element.classList.add('clause-upcoming');
+          // Upcoming sentence: clear text
+          item.element.classList.add('sentence-upcoming');
         }
       });
     }
