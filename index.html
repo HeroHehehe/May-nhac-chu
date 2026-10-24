@@ -353,8 +353,12 @@
     </main>
 
     <!-- Footer -->
-    <footer class="pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
-      <p>CuePrompter Pro • Nhận diện đầu/cuối câu mượt mà • Tốc độ bước mịn 0.1</p>
+    <footer class="pt-6 pb-4 border-t border-slate-800/80 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-3">
+      <div class="flex flex-col sm:flex-row items-center gap-2">
+        <p>CuePrompter Pro • Nhận diện giọng nói 2 lớp • Tốc độ mịn 0.1</p>
+        <span class="hidden sm:inline text-slate-700">•</span>
+        <p class="text-indigo-400 font-medium">Thiết kế và Phát triển bởi <span class="font-bold text-indigo-300">Minh Triết</span></p>
+      </div>
       <p class="flex items-center space-x-2">
         <span>Nhấn <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">Space</kbd> để chạy / dừng</span>
       </p>
@@ -589,7 +593,8 @@
         </div>
       </div>
 
-      <div class="pt-3 border-t border-slate-800 text-right">
+      <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+        <span class="text-[11px] text-slate-500 font-medium">Phát triển bởi <strong class="text-indigo-400">Minh Triết</strong></span>
         <button id="btnCloseModalBtn" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition">Đóng</button>
       </div>
     </div>
@@ -1171,6 +1176,16 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
 
         UI.prompterTextCanvas.appendChild(p);
       });
+
+      // End of script footer note
+      const endFooter = document.createElement('div');
+      endFooter.className = 'pt-16 pb-8 text-center select-none pointer-events-none opacity-40';
+      endFooter.innerHTML = `
+        <div class="h-px w-24 bg-slate-600 mx-auto mb-4"></div>
+        <p class="text-xs uppercase tracking-widest text-slate-400 font-semibold mb-1">• KẾT THÚC KỊCH BẢN •</p>
+        <p class="text-[11px] text-indigo-400">Thiết kế và Phát triển bởi Minh Triết</p>
+      `;
+      UI.prompterTextCanvas.appendChild(endFooter);
 
       applyCanvasStyles();
       setTimeout(calculateMaxScroll, 70);
