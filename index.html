@@ -316,7 +316,7 @@
             <span id="editorTailWordsVal" class="text-indigo-400 font-bold font-mono">4 - 5 từ</span>
           </div>
           <input type="range" id="editorTailWordsSlider" min="3" max="6" value="5" step="1" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
-          <span class="text-[10px] text-slate-500 block">Khớp 4 - 5 từ cuối câu giúp tuyệt đối không bị nhảy nhầm khi giữa câu có từ trùng với cuối câu (như "Hải Phòng").</span>
+          <span class="text-[10px] text-slate-500 block">Nhận diện 2 lớp: Khớp 4-5 từ đuôi câu hiện tại HOẶC 5-6 từ đầu câu sau (giúp người đọc thoải mái biến tấu cuối câu mà máy vẫn tự động chuyển tiếp).</span>
         </div>
 
         <!-- Countdown toggle -->
@@ -1122,7 +1122,7 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
               const cleanWords = normalizeVn(spokenOnly).split(/\s+/).filter(w => w.length > 0);
 
               if (cleanWords.length > 0) {
-                const headWords = cleanWords.slice(0, 4);
+                const headWords = cleanWords.slice(0, 6);
                 const tailWords = cleanWords.slice(-5);
 
                 const span = document.createElement('span');
@@ -1401,6 +1401,65 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
           UI.voiceToastText.textContent = `Xong câu ${currentIdx + 1} -> Lướt sang câu tiếp theo...`;
         } else {
           UI.voiceToastText.textContent = `Đã đọc xong kịch bản!`;
+        }
+        return;
+      }
+
+      // STEP 2: Ad-lib / Improvisation Fallback Verification
+      // If the user modified or improvised the tail of the current sentence,
+      // verify if they have begun reading the first 5-6 words of the NEXT sentence!
+      const nextIdx = currentIdx + 1;
+      if (nextIdx < App.sentencesList.length) {
+        const nextSentence = App.sentencesList[nextIdx];
+        const nextWords = nextSentence.cleanWords;
+
+        if (nextWords && nextWords.length > 0) {
+          let isHeadMatched = false;
+          const nextCount = nextWords.length;
+
+          if (nextCount <= 4) {
+            // Very short next sentence: match all its words
+            isHeadMatched = cleanSpoken.includes(nextWords.join(' '));
+          } else {
+            // Next sentence has 5+ words: check first 5-6 words
+            const head6 = nextWords.slice(0, 6).join(' ');
+            const head5 = nextWords.slice(0, 5).join(' ');
+
+            if (cleanSpoken.includes(head6) || cleanSpoken.includes(head5)) {
+              isHeadMatched = true;
+            } else {
+              // Sequential match of first 5-6 words in case of slight variance
+              const headSlice = nextWords.slice(0, Math.min(6, nextCount));
+              let sIdx = 0;
+              let matchedHeadCount = 0;
+              for (let w of headSlice) {
+                const found = cleanSpoken.indexOf(w, sIdx);
+                if (found !== -1) {
+                  matchedHeadCount++;
+                  sIdx = found + w.length;
+                }
+              }
+
+              // Require at least 4 of the first 5-6 words in order,
+              // AND the first 2 words must match in order
+              const firstWord = nextWords[0];
+              const secondWord = nextWords[1];
+              if (matchedHeadCount >= 4 && cleanSpoken.includes(firstWord) && cleanSpoken.includes(secondWord)) {
+                const p1 = cleanSpoken.indexOf(firstWord);
+                const p2 = cleanSpoken.indexOf(secondWord, p1 + firstWord.length);
+                if (p2 !== -1) {
+                  isHeadMatched = true;
+                }
+              }
+            }
+          }
+
+          if (isHeadMatched) {
+            // User began reading the next sentence (ad-lib fallback triggered!)
+            App.lastTransitionTimestamp = Date.now();
+            advanceToSentence(nextIdx);
+            UI.voiceToastText.textContent = `Bắt đầu đọc câu ${nextIdx + 1} -> Đã chuyển tiếp câu!`;
+          }
         }
       }
     }
