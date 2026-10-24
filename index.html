@@ -309,6 +309,16 @@
           </div>
         </div>
 
+        <!-- Voice Tracking Tail Words Setting -->
+        <div class="pt-2 border-t border-slate-800 space-y-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-semibold text-slate-300">Độ dài từ khóa đuôi câu</span>
+            <span id="editorTailWordsVal" class="text-indigo-400 font-bold font-mono">4 - 5 từ</span>
+          </div>
+          <input type="range" id="editorTailWordsSlider" min="3" max="6" value="5" step="1" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+          <span class="text-[10px] text-slate-500 block">Khớp 4 - 5 từ cuối câu giúp tuyệt đối không bị nhảy nhầm khi giữa câu có từ trùng với cuối câu (như "Hải Phòng").</span>
+        </div>
+
         <!-- Countdown toggle -->
         <div class="pt-2 border-t border-slate-800">
           <label class="flex items-center justify-between cursor-pointer">
@@ -608,6 +618,7 @@
       mode: 'speed',    // 'speed' or 'voice'
       ignoreCues: true, // Auto-ignore character/speaker names like "Phóng viên 1:", "Học sinh 1:"
       customCues: 'phóng viên, học sinh, mc, btv, đạo diễn, nhân vật, khách mời, chuyên gia, người dẫn, biên tập viên, thầy giáo, cô giáo',
+      tailWordsCount: 5, // 3 to 6 words matched at sentence tail
 
       // Motion & Scroll State
       isPlaying: false,
@@ -636,13 +647,13 @@
       scriptText: ''
     };
 
-    const SAMPLE_SCRIPT = `MC: Chào mừng quý vị và các bạn đang theo dõi chương trình!
+    const SAMPLE_SCRIPT = `MC: Xin kính chào quý vị và các bạn đang theo dõi chương trình!
 
-Phóng viên 1: Tôi rất vui mừng được chia sẻ với các bạn giải pháp máy nhắc chữ trực tuyến thế hệ mới: CuePrompter Pro.
+Phóng viên 1: Hiện tại, tôi đang có mặt tại Bảo tàng Hải Phòng - nơi lưu giữ nhiều dấu ấn lịch sử và những giá trị văn hóa của vùng đất và con người Hải Phòng. [Nhìn vào ống kính]
 
 Học sinh 1: Thưa thầy, phần mềm này có tính năng gì đặc biệt ạ? [Cười]
 
-Phóng viên 1: Phần mềm có khả năng tự động nhận diện tên nhân vật như "Phóng viên 1:" hay "Học sinh 1:" để bạn không phải đọc ra miệng.
+Phóng viên 1: Phần mềm có khả năng nhận diện 4 đến 5 từ khóa đuôi câu, loại bỏ hoàn toàn việc nhảy nhầm khi giữa câu có từ trùng lặp như "Hải Phòng", đồng thời tự động bỏ qua tên nhân vật "Phóng viên 1:" hay [Ghi chú].
 
 MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên nghiệp, cuốn hút và thành công rực rỡ!`;
 
@@ -673,6 +684,8 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
       editorIgnoreCuesToggle: document.getElementById('editorIgnoreCuesToggle'),
       editorCustomCuesInput: document.getElementById('editorCustomCuesInput'),
       cuesInputWrapper: document.getElementById('cuesInputWrapper'),
+      editorTailWordsSlider: document.getElementById('editorTailWordsSlider'),
+      editorTailWordsVal: document.getElementById('editorTailWordsVal'),
       editorCountdownToggle: document.getElementById('editorCountdownToggle'),
       editorEyelineToggle: document.getElementById('editorEyelineToggle'),
       editorFlipX: document.getElementById('editorFlipX'),
@@ -748,6 +761,7 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
           App.mode = parsed.mode ?? 'speed';
           App.ignoreCues = parsed.ignoreCues ?? true;
           App.customCues = parsed.customCues ?? 'phóng viên, học sinh, mc, btv, đạo diễn, nhân vật, khách mời, chuyên gia, người dẫn, biên tập viên, thầy giáo, cô giáo';
+          App.tailWordsCount = parsed.tailWordsCount ?? 5;
         }
 
         const savedScript = localStorage.getItem('cueprompter_script');
@@ -772,7 +786,8 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
           useCountdown: App.useCountdown,
           mode: App.mode,
           ignoreCues: App.ignoreCues,
-          customCues: App.customCues
+          customCues: App.customCues,
+          tailWordsCount: App.tailWordsCount
         };
         localStorage.setItem('cueprompter_settings', JSON.stringify(toSave));
         localStorage.setItem('cueprompter_script', App.scriptText);
@@ -1107,8 +1122,8 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
               const cleanWords = normalizeVn(spokenOnly).split(/\s+/).filter(w => w.length > 0);
 
               if (cleanWords.length > 0) {
-                const headWords = cleanWords.slice(0, 3);
-                const tailWords = cleanWords.slice(-3);
+                const headWords = cleanWords.slice(0, 4);
+                const tailWords = cleanWords.slice(-5);
 
                 const span = document.createElement('span');
                 const badgeToPrepend = isFirstClauseInPara && speakerBadgeHtml ? speakerBadgeHtml : '';
@@ -1299,11 +1314,11 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
     App.lastTransitionTimestamp = 0;
 
     /**
-     * Strict Tail-Only Voice Processor:
-     * - ONLY checks the LAST FEW WORDS of the CURRENT active sentence.
+     * Strict Tail-Only Voice Processor (4-5 Word Precision):
+     * - Requires matching a 4-5 word tail sequence at the end of the sentence.
+     * - Prevents duplicate words in the middle of sentences (e.g. "Bảo tàng Hải Phòng" vs "...con người Hải Phòng") from causing premature jumps.
+     * - Uses exact 5-gram / 4-gram match, plus a sequential ordered token check.
      * - ZERO look-ahead! Never leaps ahead into future sentences.
-     * - When you pause, breathe, or cough, it STAYS locked on the current sentence.
-     * - ONLY advances (+1 step) when you actually speak the tail of the current sentence!
      * - Includes 1.2s transition cooldown to prevent double-skipping.
      */
     function processHeardTranscript(transcript) {
@@ -1321,29 +1336,57 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
         return;
       }
 
-      // Determine tail phrase of the CURRENT sentence
+      // Determine words of the CURRENT sentence
       const words = currentSentence.cleanWords;
       if (!words || words.length === 0) return;
 
       let isTailMatched = false;
+      const numWords = words.length;
+      const reqTailCount = Math.min(numWords, App.tailWordsCount || 5);
 
-      if (words.length <= 2) {
-        // Very short sentence: match the exact sentence string
+      if (numWords <= 3) {
+        // Very short sentence (1-3 words): exact match full sentence string
         isTailMatched = cleanSpoken.includes(words.join(' '));
+      } else if (numWords <= 5) {
+        // Short sentence (4-5 words): match the last 3-4 words or entire short sentence
+        const tail3 = words.slice(-3).join(' ');
+        const tailAll = words.join(' ');
+        isTailMatched = cleanSpoken.includes(tail3) || cleanSpoken.includes(tailAll);
       } else {
-        // Multi-word sentence: construct tail 2-gram and 3-gram
-        const lastTwo = words.slice(-2).join(' ');   // e.g. "chương trình"
-        const lastThree = words.slice(-3).join(' '); // e.g. "dõi chương trình"
+        // Medium and Long sentences (6+ words):
+        // Specifically prevent false jumps when middle of sentence has duplicate words (e.g. "Hải Phòng")
+        // Require matching a 4-5 word tail sequence!
+        const tail5 = words.slice(-5).join(' '); // 5 words, e.g. "và con người hải phòng"
+        const tail4 = words.slice(-4).join(' '); // 4 words, e.g. "con người hải phòng"
 
-        // Check if spoken speech contains the continuous tail phrase
-        if (cleanSpoken.includes(lastThree) || cleanSpoken.includes(lastTwo)) {
+        // 1. Exact continuous phrase match (5-gram or 4-gram)
+        if (cleanSpoken.includes(tail5) || cleanSpoken.includes(tail4)) {
           isTailMatched = true;
         } else {
-          // Fallback: check if the final 2 words both appear in the recent spoken words
-          const finalWord = words[words.length - 1];
-          const secondFinalWord = words[words.length - 2];
-          if (cleanSpoken.includes(finalWord) && cleanSpoken.includes(secondFinalWord)) {
-            isTailMatched = true;
+          // 2. Sequential Ordered Match:
+          // Check if at least (reqTailCount - 1) words from the tail slice appear in sequential order in speech
+          const tailSlice = words.slice(-reqTailCount); // last 4 or 5 words
+          let searchIdx = 0;
+          let matchedSeqCount = 0;
+          for (let w of tailSlice) {
+            const foundIdx = cleanSpoken.indexOf(w, searchIdx);
+            if (foundIdx !== -1) {
+              matchedSeqCount++;
+              searchIdx = foundIdx + w.length;
+            }
+          }
+
+          // Must match at least (reqTailCount - 1) words in sequential order,
+          // AND the final ending word must be matched in speech!
+          const lastWord = words[numWords - 1];
+          const secondLastWord = words[numWords - 2];
+          if (matchedSeqCount >= (reqTailCount - 1) && cleanSpoken.includes(lastWord)) {
+            // Further verify the second-to-last word appears before the last word
+            const lastPos = cleanSpoken.lastIndexOf(lastWord);
+            const secondLastPos = cleanSpoken.lastIndexOf(secondLastWord);
+            if (secondLastPos !== -1 && lastPos > secondLastPos) {
+              isTailMatched = true;
+            }
           }
         }
       }
@@ -1657,6 +1700,13 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
         saveSettings();
       });
 
+      // Tail Words setting for Voice Tracking
+      UI.editorTailWordsSlider.addEventListener('input', (e) => {
+        App.tailWordsCount = parseInt(e.target.value, 10);
+        UI.editorTailWordsVal.textContent = `${App.tailWordsCount} từ`;
+        saveSettings();
+      });
+
       // Countdown toggle & Eyeline toggle
       UI.editorCountdownToggle.addEventListener('change', (e) => {
         App.useCountdown = e.target.checked;
@@ -1798,6 +1848,8 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
       UI.editorIgnoreCuesToggle.checked = App.ignoreCues;
       UI.editorCustomCuesInput.value = App.customCues;
       UI.cuesInputWrapper.style.display = App.ignoreCues ? 'block' : 'none';
+      UI.editorTailWordsSlider.value = App.tailWordsCount;
+      UI.editorTailWordsVal.textContent = `${App.tailWordsCount} từ`;
 
       if (App.mode === 'voice') {
         UI.tabModeVoice.className = 'py-2 px-2 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition';
