@@ -296,6 +296,19 @@
           </div>
         </div>
 
+        <!-- Character Names & Stage Cues Ignore -->
+        <div class="pt-2 border-t border-slate-800 space-y-2">
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-xs font-semibold text-slate-300">Bỏ qua tên nhân vật khi đọc</span>
+            <input type="checkbox" id="editorIgnoreCuesToggle" checked class="w-4 h-4 text-indigo-600 rounded bg-slate-800 border-slate-700 focus:ring-indigo-500">
+          </label>
+          <div id="cuesInputWrapper" class="space-y-1">
+            <span class="text-[11px] text-slate-400 block">Tên nhân vật / nhãn không cần đọc:</span>
+            <input type="text" id="editorCustomCuesInput" value="phóng viên, học sinh, mc, btv, đạo diễn, nhân vật, khách mời, chuyên gia, người dẫn, biên tập viên, thầy giáo, cô giáo" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono">
+            <span class="text-[10px] text-slate-500 block">Tự động gắn nhãn nổi bật và bỏ qua các tiền tố như "Phóng viên 1:", "Học sinh 1:", "MC:" hay [Ghi chú].</span>
+          </div>
+        </div>
+
         <!-- Countdown toggle -->
         <div class="pt-2 border-t border-slate-800">
           <label class="flex items-center justify-between cursor-pointer">
@@ -593,6 +606,8 @@
       showEyeline: true,
       useCountdown: true,
       mode: 'speed',    // 'speed' or 'voice'
+      ignoreCues: true, // Auto-ignore character/speaker names like "Phóng viên 1:", "Học sinh 1:"
+      customCues: 'phóng viên, học sinh, mc, btv, đạo diễn, nhân vật, khách mời, chuyên gia, người dẫn, biên tập viên, thầy giáo, cô giáo',
 
       // Motion & Scroll State
       isPlaying: false,
@@ -621,21 +636,15 @@
       scriptText: ''
     };
 
-    const SAMPLE_SCRIPT = `Chào mừng quý vị và các bạn đang theo dõi chương trình!
+    const SAMPLE_SCRIPT = `MC: Chào mừng quý vị và các bạn đang theo dõi chương trình!
 
-Tôi rất vui mừng được chia sẻ với các bạn giải pháp máy nhắc chữ trực tuyến thế hệ mới: CuePrompter Pro.
+Phóng viên 1: Tôi rất vui mừng được chia sẻ với các bạn giải pháp máy nhắc chữ trực tuyến thế hệ mới: CuePrompter Pro.
 
-Khi quay video hoặc thuyết trình trước máy quay, việc đảo mắt hoặc quên kịch bản luôn là nỗi ám ảnh lớn nhất. Với phiên bản cải tiến này:
+Học sinh 1: Thưa thầy, phần mềm này có tính năng gì đặc biệt ạ? [Cười]
 
-Thứ nhất: Tốc độ cuộn chữ đạt độ mượt tuyệt đối 60-144fps nhờ công nghệ GPU Transform translate3d, loại bỏ hoàn toàn hiện tượng khựng giật của thanh cuộn trình duyệt truyền thống.
+Phóng viên 1: Phần mềm có khả năng tự động nhận diện tên nhân vật như "Phóng viên 1:" hay "Học sinh 1:" để bạn không phải đọc ra miệng.
 
-Thứ hai: Độ rộng văn bản tự động co giãn tràn màn hình theo tỉ lệ của từng thiết bị như iPad, máy tính bàn và laptop, giúp mắt bạn dễ dàng đọc các chữ to mà không bị gò bó ở giữa!
-
-Thứ ba: Thuật toán nhận diện giọng nói thông minh chỉ cần bắt vài chữ đầu câu hoặc cuối câu, giúp nhận diện cực nhanh, không gây đơ lag máy và tự động lướt ngay sang câu tiếp theo khi bạn đọc nhanh!
-
-Thứ tư: Nút tăng giảm tốc độ với bước nhảy siêu mịn 0.1, giúp bạn tinh chỉnh tốc độ đọc chuẩn xác đến từng miligiây.
-
-Chúc các bạn có những thước phim và bài thuyết trình chuyên nghiệp, cuốn hút và thành công rực rỡ!`;
+MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên nghiệp, cuốn hút và thành công rực rỡ!`;
 
     // DOM Elements Cache
     const UI = {
@@ -661,6 +670,9 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       editorFontSizeVal: document.getElementById('editorFontSizeVal'),
       editorLineHeightSlider: document.getElementById('editorLineHeightSlider'),
       editorLineHeightVal: document.getElementById('editorLineHeightVal'),
+      editorIgnoreCuesToggle: document.getElementById('editorIgnoreCuesToggle'),
+      editorCustomCuesInput: document.getElementById('editorCustomCuesInput'),
+      cuesInputWrapper: document.getElementById('cuesInputWrapper'),
       editorCountdownToggle: document.getElementById('editorCountdownToggle'),
       editorEyelineToggle: document.getElementById('editorEyelineToggle'),
       editorFlipX: document.getElementById('editorFlipX'),
@@ -734,6 +746,8 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
           App.showEyeline = parsed.showEyeline ?? true;
           App.useCountdown = parsed.useCountdown ?? true;
           App.mode = parsed.mode ?? 'speed';
+          App.ignoreCues = parsed.ignoreCues ?? true;
+          App.customCues = parsed.customCues ?? 'phóng viên, học sinh, mc, btv, đạo diễn, nhân vật, khách mời, chuyên gia, người dẫn, biên tập viên, thầy giáo, cô giáo';
         }
 
         const savedScript = localStorage.getItem('cueprompter_script');
@@ -756,7 +770,9 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
           flipY: App.flipY,
           showEyeline: App.showEyeline,
           useCountdown: App.useCountdown,
-          mode: App.mode
+          mode: App.mode,
+          ignoreCues: App.ignoreCues,
+          customCues: App.customCues
         };
         localStorage.setItem('cueprompter_settings', JSON.stringify(toSave));
         localStorage.setItem('cueprompter_script', App.scriptText);
@@ -990,8 +1006,26 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 6. SENTENCE-BASED CANVAS & HEAD/TAIL TOKEN EXTRACTION */
+    /* 6. SENTENCE-BASED CANVAS & CHARACTER/STAGE CUE PARSER */
     /* ============================================================== */
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatDialogueHtml(text) {
+      let html = escapeHtml(text);
+      // Format stage directions: [Cười], (Vỗ tay)
+      html = html.replace(/\[([^\]]+)\]/g, '<span class="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 mx-1 select-none align-middle font-sans shadow-sm">[$1]</span>');
+      html = html.replace(/\(([^)]+)\)/g, '<span class="inline-flex items-center text-xs italic font-medium px-2 py-0.5 rounded bg-slate-700/60 text-slate-300 border border-slate-600/40 mx-1 select-none align-middle font-sans">($1)</span>');
+      return html;
+    }
+
     function renderPrompterCanvas() {
       const text = App.scriptText.trim();
       UI.prompterTextCanvas.innerHTML = '';
@@ -1003,11 +1037,18 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         return;
       }
 
+      const cueKeywords = (App.customCues || '')
+        .toLowerCase()
+        .split(',')
+        .map(k => k.trim())
+        .filter(Boolean);
+
       const paragraphs = text.split('\n');
       let sentenceIndex = 0;
 
       paragraphs.forEach(para => {
-        if (!para.trim()) {
+        let trimmedPara = para.trim();
+        if (!trimmedPara) {
           const br = document.createElement('div');
           br.className = 'h-8';
           UI.prompterTextCanvas.appendChild(br);
@@ -1017,9 +1058,39 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         const p = document.createElement('p');
         p.className = 'mb-8';
 
-        // Split paragraph into logical sentences and clauses (by . , ? ! ; :)
-        const segments = para.split(/([.!?;:\n]+)/g);
+        let speakerBadgeHtml = '';
+
+        // Check for character / speaker prefix at beginning of paragraph
+        if (App.ignoreCues) {
+          const speakerMatch = trimmedPara.match(/^(\[|\()?\s*([A-ZÀ-Ỹa-zà-ỹ0-9\s_-]{1,35})\s*(\]|\))?\s*:\s*/);
+          if (speakerMatch) {
+            const rawTag = speakerMatch[2].trim();
+            const lowerTag = rawTag.toLowerCase();
+            const isMatch = cueKeywords.length === 0 || cueKeywords.some(kw => lowerTag.includes(kw));
+
+            if (isMatch) {
+              speakerBadgeHtml = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 mr-2 rounded-md bg-amber-500/25 text-amber-300 border border-amber-500/40 text-xs font-extrabold uppercase tracking-wider select-none align-middle shadow-sm"><svg class="w-3.5 h-3.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>${escapeHtml(rawTag)}</span>`;
+              trimmedPara = trimmedPara.slice(speakerMatch[0].length).trim();
+            }
+          }
+        }
+
+        // If paragraph only contained the speaker tag
+        if (!trimmedPara) {
+          if (speakerBadgeHtml) {
+            const badgeSpan = document.createElement('div');
+            badgeSpan.innerHTML = speakerBadgeHtml;
+            badgeSpan.className = 'mb-2';
+            p.appendChild(badgeSpan);
+            UI.prompterTextCanvas.appendChild(p);
+          }
+          return;
+        }
+
+        // Split paragraph into natural sentences (by . ! ? \n)
+        const segments = trimmedPara.split(/([.!?\n]+)/g);
         let accumulatedClause = '';
+        let isFirstClauseInPara = true;
 
         for (let i = 0; i < segments.length; i++) {
           accumulatedClause += segments[i];
@@ -1028,19 +1099,26 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
           if (i % 2 === 1 || i === segments.length - 1) {
             const rawClause = accumulatedClause.trim();
             if (rawClause) {
-              const cleanWords = normalizeVn(rawClause).split(/\s+/).filter(w => w.length > 0);
+              // Strip stage cues inside brackets [..] and (..) for voice normalization
+              const spokenOnly = rawClause
+                .replace(/\[[^\]]*\]/g, ' ')
+                .replace(/\([^)]*\)/g, ' ');
+
+              const cleanWords = normalizeVn(spokenOnly).split(/\s+/).filter(w => w.length > 0);
 
               if (cleanWords.length > 0) {
-                // Extract head words (first 2-3 words) and tail words (last 2-3 words)
                 const headWords = cleanWords.slice(0, 3);
                 const tailWords = cleanWords.slice(-3);
 
                 const span = document.createElement('span');
-                span.textContent = rawClause + ' ';
+                const badgeToPrepend = isFirstClauseInPara && speakerBadgeHtml ? speakerBadgeHtml : '';
+                isFirstClauseInPara = false;
+
+                span.innerHTML = badgeToPrepend + formatDialogueHtml(rawClause) + ' ';
                 span.id = `cue-sentence-${sentenceIndex}`;
                 span.dataset.index = sentenceIndex;
                 span.className = (sentenceIndex === 0 ? 'cue-sentence sentence-active' : 'cue-sentence sentence-upcoming') + ' cursor-pointer hover:opacity-100 transition-all';
-                
+
                 const clickTargetIdx = sentenceIndex;
                 span.addEventListener('click', (e) => {
                   e.stopPropagation();
@@ -1062,6 +1140,14 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
                 });
 
                 sentenceIndex++;
+              } else {
+                // Bracket-only stage direction line (e.g. "[Vỗ tay]")
+                const span = document.createElement('span');
+                const badgeToPrepend = isFirstClauseInPara && speakerBadgeHtml ? speakerBadgeHtml : '';
+                isFirstClauseInPara = false;
+                span.innerHTML = badgeToPrepend + formatDialogueHtml(rawClause) + ' ';
+                span.className = 'cue-sentence text-amber-400/80 italic text-sm';
+                p.appendChild(span);
               }
             }
             accumulatedClause = '';
@@ -1559,6 +1645,18 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         });
       });
 
+      // Character Names & Cues Settings
+      UI.editorIgnoreCuesToggle.addEventListener('change', (e) => {
+        App.ignoreCues = e.target.checked;
+        UI.cuesInputWrapper.style.display = App.ignoreCues ? 'block' : 'none';
+        saveSettings();
+      });
+
+      UI.editorCustomCuesInput.addEventListener('input', (e) => {
+        App.customCues = e.target.value;
+        saveSettings();
+      });
+
       // Countdown toggle & Eyeline toggle
       UI.editorCountdownToggle.addEventListener('change', (e) => {
         App.useCountdown = e.target.checked;
@@ -1697,6 +1795,9 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       UI.editorEyelineToggle.checked = App.showEyeline;
       UI.editorFlipX.checked = App.flipX;
       UI.editorFlipY.checked = App.flipY;
+      UI.editorIgnoreCuesToggle.checked = App.ignoreCues;
+      UI.editorCustomCuesInput.value = App.customCues;
+      UI.cuesInputWrapper.style.display = App.ignoreCues ? 'block' : 'none';
 
       if (App.mode === 'voice') {
         UI.tabModeVoice.className = 'py-2 px-2 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition';
