@@ -99,29 +99,26 @@
       opacity: 1;
     }
 
-    /* Word-by-word Speech Recognition Highlights */
-    .cue-word {
-      display: inline-block;
-      padding: 0 3px;
+    /* Sentence / Clause Level Highlighting (Zero DOM lag) */
+    .cue-sentence {
+      transition: color 0.25s ease, opacity 0.25s ease, text-shadow 0.25s ease, transform 0.25s ease;
+      display: inline;
+      padding: 2px 4px;
       border-radius: 6px;
-      transition: color 0.15s ease, background 0.15s ease, text-shadow 0.15s ease;
     }
-    .cue-word.word-spoken {
-      color: #94a3b8; /* Soft slate for read text */
-      opacity: 0.65;
+    .cue-sentence.sentence-passed {
+      color: #64748b;
+      opacity: 0.35; /* Past sentences dim down completely */
     }
-    .cue-word.word-current {
-      color: #ffffff;
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(168, 85, 247, 0.5));
-      text-shadow: 0 0 20px rgba(99, 102, 241, 0.8);
-      box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
-      transform: scale(1.04);
-    }
-    .cue-word.word-active-line {
+    .cue-sentence.sentence-active {
       color: #ffffff;
       opacity: 1;
+      background: linear-gradient(120deg, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.3));
+      box-shadow: 0 0 25px rgba(99, 102, 241, 0.35);
+      border-bottom: 2px solid rgba(129, 140, 248, 0.8);
+      font-weight: 800;
     }
-    .cue-word.word-pending {
+    .cue-sentence.sentence-upcoming {
       color: #cbd5e1;
       opacity: 0.85;
     }
@@ -151,9 +148,9 @@
             <h1 class="text-xl md:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
               CuePrompter Pro
             </h1>
-            <span class="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">AI Voice Tracking</span>
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">Head-Tail Smart AI</span>
           </div>
-          <p class="text-xs text-slate-400">Nhận diện giọng nói từng chữ • Tự động lướt dòng siêu mượt LERP không giật</p>
+          <p class="text-xs text-slate-400">Bắt đầu & kết câu thông minh • Chuyển dòng siêu nhanh khi đọc lướt • Bước chỉnh 0.1</p>
         </div>
       </div>
 
@@ -202,7 +199,7 @@
         </div>
 
         <div class="relative">
-          <textarea id="scriptInput" rows="18" placeholder="Nhập hoặc dán kịch bản của bạn vào đây...&#10;&#10;Mẹo: Bạn có thể bật chế độ Theo giọng nói để màn hình tự động bám theo từng từ bạn đọc và nhẹ nhàng chuyển dòng khi bạn nói xong!" class="w-full bg-[#11131a] border border-slate-800 rounded-2xl p-6 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/80 focus:border-transparent transition resize-y font-prompter text-lg leading-relaxed shadow-inner"></textarea>
+          <textarea id="scriptInput" rows="18" placeholder="Nhập hoặc dán kịch bản của bạn vào đây...&#10;&#10;Mẹo: Bạn có thể bật chế độ Theo giọng nói để màn hình tự động nhận diện đầu/cuối câu và lướt mượt mà sang câu tiếp theo!" class="w-full bg-[#11131a] border border-slate-800 rounded-2xl p-6 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/80 focus:border-transparent transition resize-y font-prompter text-lg leading-relaxed shadow-inner"></textarea>
         </div>
       </div>
 
@@ -259,15 +256,20 @@
           </div>
         </div>
 
-        <!-- Speed Preset (Level 0.5 to 10.0) -->
+        <!-- Speed Preset (Level 0.5 to 10.0 with granular 0.1 step) -->
         <div>
           <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
-            <span class="text-slate-300">Tốc độ cuộn đều (khi tắt mic)</span>
+            <span class="text-slate-300">Tốc độ cuộn (Bước 0.1)</span>
             <span class="text-indigo-400 font-mono font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
               Mức <span id="editorSpeedVal">3.5</span> (~<span id="editorSpeedWpm">140</span> wpm)
             </span>
           </div>
-          <input type="range" id="editorSpeedSlider" min="0.5" max="10" step="0.5" value="3.5" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+          <input type="range" id="editorSpeedSlider" min="0.5" max="10" step="0.1" value="3.5" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+            <span>0.5 (Chậm)</span>
+            <span>3.5 (Chuẩn)</span>
+            <span>10.0 (Nhanh)</span>
+          </div>
         </div>
 
         <!-- Line Height -->
@@ -329,7 +331,7 @@
 
     <!-- Footer -->
     <footer class="pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
-      <p>CuePrompter Pro • Nhận diện giọng nói chuẩn xác từng chữ & Chuyển dòng LERP siêu mượt</p>
+      <p>CuePrompter Pro • Nhận diện đầu/cuối câu mượt mà • Tốc độ bước mịn 0.1</p>
       <p class="flex items-center space-x-2">
         <span>Nhấn <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">Space</kbd> để chạy / dừng</span>
       </p>
@@ -342,7 +344,7 @@
   <!-- ============================================================== -->
   <div id="prompterScreen" class="hidden fixed inset-0 z-40 bg-black text-white select-none overflow-hidden">
 
-    <!-- FLOATING TOP CONTROL BAR (CuePrompter Sleek Style) -->
+    <!-- FLOATING TOP CONTROL BAR -->
     <header id="controlHeader" class="fixed top-3 left-1/2 transform -translate-x-1/2 z-50 w-[96%] max-w-6xl transition-all duration-300 ease-in-out">
       <div class="bg-[#12141c]/95 backdrop-blur-xl border border-slate-700/80 rounded-2xl shadow-2xl p-2.5 md:p-3 flex flex-wrap items-center justify-between gap-2.5 text-slate-200 ring-1 ring-white/10">
         
@@ -387,7 +389,7 @@
           </div>
         </div>
 
-        <!-- Center group: Width, Speed, Font Controls -->
+        <!-- Center group: Width, Speed (step 0.1), Font Controls -->
         <div class="flex items-center space-x-2 md:space-x-2.5">
           <!-- Width (Độ rộng chữ theo %) -->
           <div class="flex items-center space-x-1.5 bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-700/60" title="Chỉnh độ rộng chữ tràn màn hình">
@@ -397,13 +399,13 @@
             <input type="range" id="prompterWidthSlider" min="50" max="100" step="5" value="95" class="w-14 md:w-20 h-1.5 bg-slate-700 rounded cursor-pointer">
           </div>
 
-          <!-- Speed Control -->
-          <div class="flex items-center space-x-1 bg-slate-800/80 px-2 py-1.5 rounded-xl border border-slate-700/60">
+          <!-- Speed Control (Step 0.1) -->
+          <div class="flex items-center space-x-1 bg-slate-800/80 px-2 py-1.5 rounded-xl border border-slate-700/60" title="Tốc độ cuộn (bước 0.1)">
             <span class="text-xs text-slate-400 font-medium hidden md:inline">Tốc độ:</span>
-            <button id="btnSpeedDown" title="Giảm tốc độ (↓)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">-</button>
+            <button id="btnSpeedDown" title="Giảm tốc độ 0.1 (↓)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">-</button>
             <span id="prompterSpeedDisplay" class="font-mono text-xs font-bold text-indigo-400 min-w-[28px] text-center">3.5</span>
-            <button id="btnSpeedUp" title="Tăng tốc độ (↑)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">+</button>
-            <input type="range" id="prompterSpeedSlider" min="0.5" max="10" step="0.5" value="3.5" class="w-14 md:w-16 h-1.5 bg-slate-700 rounded cursor-pointer">
+            <button id="btnSpeedUp" title="Tăng tốc độ 0.1 (↑)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">+</button>
+            <input type="range" id="prompterSpeedSlider" min="0.5" max="10" step="0.1" value="3.5" class="w-14 md:w-16 h-1.5 bg-slate-700 rounded cursor-pointer">
           </div>
 
           <!-- Font Size Control -->
@@ -496,7 +498,7 @@
     <!-- VOICE STATUS TOAST -->
     <div id="voiceToast" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 px-5 py-2.5 rounded-full bg-slate-900/95 border border-indigo-500/60 text-xs font-semibold text-indigo-100 shadow-2xl flex items-center space-x-3 backdrop-blur-md ring-1 ring-white/10">
       <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
-      <span id="voiceToastText">Đang nghe giọng nói tiếng Việt theo từng từ...</span>
+      <span id="voiceToastText">Đang nghe giọng nói...</span>
     </div>
 
     <!-- ============================================================== -->
@@ -510,7 +512,7 @@
           <!-- Dynamic Full-Width Container (Responsive for PC & iPad) -->
           <div id="prompterContainer" class="mx-auto pt-[30vh] pb-[70vh] transition-all duration-150">
             <div id="prompterTextCanvas" class="font-prompter font-bold tracking-wide transition-all whitespace-pre-wrap">
-              <!-- Script word elements rendered here -->
+              <!-- Script sentence elements rendered here -->
             </div>
           </div>
         </div>
@@ -537,7 +539,7 @@
           <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono font-bold">Space</kbd>
         </div>
         <div class="flex justify-between items-center py-1">
-          <span class="text-slate-300">Tăng / Giảm tốc độ</span>
+          <span class="text-slate-300">Tăng / Giảm tốc độ (bước 0.1)</span>
           <div class="space-x-1">
             <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono font-bold">↑</kbd>
             <kbd class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-indigo-300 font-mono font-bold">↓</kbd>
@@ -572,16 +574,16 @@
 
 
   <!-- ============================================================== -->
-  <!-- 4. CORE ENGINE JAVASCRIPT (WORD-BY-WORD AI + LERP MOTION) -->
+  <!-- 4. CORE ENGINE JAVASCRIPT (HEAD-TAIL AI + LERP MOTION) -->
   <!-- ============================================================== -->
   <script>
     /**
-     * CuePrompter Pro - Word-by-Word Voice Recognition Engine with LERP Smooth Scrolling
+     * CuePrompter Pro - Sentence Head-Tail Voice AI with Zero DOM Lag & 0.1 Speed Precision
      */
     const App = {
       // Configuration
       contentWidth: 95, // 50% to 100% of screen width (Default 95%)
-      speedLevel: 3.5,  // 0.5 to 10.0
+      speedLevel: 3.5,  // 0.5 to 10.0 (Step 0.1)
       fontSize: 56,     // 20px to 120px
       lineHeight: 1.7,  // 1.3 to 2.4
       textAlign: 'center',
@@ -596,7 +598,7 @@
       isPlaying: false,
       isPrompterActive: false,
       currentY: 0,      // Actual GPU translate3d position (Float)
-      targetY: 0,       // Target position for Voice Recognition LERP Glide
+      targetY: 0,       // Target position for Voice Glide
       maxY: 0,          // Maximum scroll bound
       rafId: null,
       lastFrameTime: 0,
@@ -609,12 +611,11 @@
       countdownInterval: null,
       isCountingDown: false,
 
-      // Voice recognition & Word Tracking
+      // Voice recognition & Sentence Head-Tail Tracking
       recognition: null,
       isVoiceActive: false,
-      wordsList: [],     // Array of word objects { index, raw, clean, element, top }
-      currentWordIdx: 0, // Current spoken progress pointer (Monotonic forward progression)
-      currentLineTop: -1,
+      sentencesList: [],     // Array of sentence items { index, raw, clean, headWords, tailWords, element, top }
+      currentSentenceIdx: 0, // Strict forward-only pointer (Past sentences locked out)
 
       // Script
       scriptText: ''
@@ -630,9 +631,9 @@ Thứ nhất: Tốc độ cuộn chữ đạt độ mượt tuyệt đối 60-14
 
 Thứ hai: Độ rộng văn bản tự động co giãn tràn màn hình theo tỉ lệ của từng thiết bị như iPad, máy tính bàn và laptop, giúp mắt bạn dễ dàng đọc các chữ to mà không bị gò bó ở giữa!
 
-Thứ ba: Tính năng nhận diện giọng nói tiếng Việt bám sát theo từng chữ bạn phát âm, tự động phát hiện khi đọc xong dòng hiện tại và nhẹ nhàng lướt chuyển sang dòng tiếp theo siêu mượt mà không hề bị giật cục.
+Thứ ba: Thuật toán nhận diện giọng nói thông minh chỉ cần bắt vài chữ đầu câu hoặc cuối câu, giúp nhận diện cực nhanh, không gây đơ lag máy và tự động lướt ngay sang câu tiếp theo khi bạn đọc nhanh!
 
-Thứ tư: Chế độ đếm ngược 3 giây thông minh giúp bạn hít thở sâu và sẵn sàng thần thái tốt nhất trước khi bấm máy ghi hình.
+Thứ tư: Nút tăng giảm tốc độ với bước nhảy siêu mịn 0.1, giúp bạn tinh chỉnh tốc độ đọc chuẩn xác đến từng miligiây.
 
 Chúc các bạn có những thước phim và bài thuyết trình chuyên nghiệp, cuốn hút và thành công rực rỡ!`;
 
@@ -723,7 +724,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         if (savedSettings) {
           const parsed = JSON.parse(savedSettings);
           App.contentWidth = parsed.contentWidth ?? 95;
-          App.speedLevel = parsed.speedLevel ?? 3.5;
+          App.speedLevel = parsed.speedLevel !== undefined ? parseFloat(parsed.speedLevel) : 3.5;
           App.fontSize = parsed.fontSize ?? 56;
           App.lineHeight = parsed.lineHeight ?? 1.7;
           App.textAlign = parsed.textAlign ?? 'center';
@@ -794,7 +795,8 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       if (!str) return '';
       return str
         .toLowerCase()
-        .replace(/[.,/#!$%^&*;:{}=\-_`~()?"'“”„…\[\]]/g, '')
+        .replace(/[.,/#!$%^&*;:{}=\-_`~()?"'“”„…\[\]]/g, ' ')
+        .replace(/\s+/g, ' ')
         .trim();
     }
 
@@ -811,11 +813,11 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       const contentHeight = UI.prompterGpuLayer.scrollHeight;
       App.maxY = Math.max(0, contentHeight - viewportHeight * 0.35);
 
-      // Recompute word layout positions
-      if (App.wordsList && App.wordsList.length > 0) {
-        App.wordsList.forEach(w => {
-          w.top = w.element.offsetTop;
-          w.height = w.element.offsetHeight;
+      // Pre-cache sentence top coordinates once during render/resize
+      if (App.sentencesList && App.sentencesList.length > 0) {
+        App.sentencesList.forEach(s => {
+          s.top = s.element.offsetTop;
+          s.height = s.element.offsetHeight;
         });
       }
     }
@@ -869,8 +871,9 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
 
     /**
      * RENDER FRAME LOOP:
-     * - In 'voice' mode: Uses exponential LERP smoothing to glide smoothly towards targetY (no snapping!).
-     * - In 'speed' mode: Uses delta-time pixel velocity.
+     * - In 'voice' mode: Uses LERP exponential smoothing towards targetY.
+     *   When user reads fast, factor glides smoothly and quickly to the new sentence!
+     * - In 'speed' mode: Uses constant pixel velocity (with 0.1 precision).
      */
     function renderFrame(now) {
       if (!App.isPlaying) return;
@@ -880,11 +883,11 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       const safeDeltaMs = Math.min(deltaMs, 60);
 
       if (App.isVoiceActive) {
-        // LERP Smooth Damping to targetY (Silky smooth line transition)
+        // LERP Smooth Glide to targetY
         const diff = App.targetY - App.currentY;
         if (Math.abs(diff) > 0.4) {
-          // Exponential decay factor (ease-out over ~350ms)
-          const factor = 1 - Math.exp(-6.5 * (safeDeltaMs / 1000));
+          // Responsive damp factor (~8.5 for fast smooth glide)
+          const factor = 1 - Math.exp(-8.5 * (safeDeltaMs / 1000));
           App.currentY += diff * factor;
           updateGpuTransform();
         }
@@ -910,9 +913,8 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     function resetPrompterScroll() {
       App.currentY = 0;
       App.targetY = 0;
-      App.currentWordIdx = 0;
-      App.currentLineTop = -1;
-      updateWordVisuals();
+      App.currentSentenceIdx = 0;
+      updateSentenceVisuals();
       updateGpuTransform();
     }
 
@@ -988,14 +990,13 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 6. WORD-BY-WORD CANVAS & RESPONSIVE SCALING */
+    /* 6. SENTENCE-BASED CANVAS & HEAD/TAIL TOKEN EXTRACTION */
     /* ============================================================== */
     function renderPrompterCanvas() {
       const text = App.scriptText.trim();
       UI.prompterTextCanvas.innerHTML = '';
-      App.wordsList = [];
-      App.currentWordIdx = 0;
-      App.currentLineTop = -1;
+      App.sentencesList = [];
+      App.currentSentenceIdx = 0;
 
       if (!text) {
         UI.prompterTextCanvas.innerHTML = '<span class="text-slate-500 italic">Chưa có nội dung kịch bản. Hãy quay lại soạn thảo kịch bản!</span>';
@@ -1003,7 +1004,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       }
 
       const paragraphs = text.split('\n');
-      let wordIndex = 0;
+      let sentenceIndex = 0;
 
       paragraphs.forEach(para => {
         if (!para.trim()) {
@@ -1016,28 +1017,50 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         const p = document.createElement('p');
         p.className = 'mb-8';
 
-        // Split paragraph into individual words while preserving whitespace
-        const tokens = para.trim().split(/\s+/);
-        tokens.forEach(tok => {
-          const clean = normalizeVn(tok);
-          if (!clean) return;
+        // Split paragraph into logical sentences and clauses (by . , ? ! ; :)
+        const segments = para.split(/([.!?;:\n]+)/g);
+        let accumulatedClause = '';
 
-          const span = document.createElement('span');
-          span.textContent = tok + ' ';
-          span.id = `cue-word-${wordIndex}`;
-          span.dataset.index = wordIndex;
-          span.className = 'cue-word word-pending';
-          p.appendChild(span);
+        for (let i = 0; i < segments.length; i++) {
+          accumulatedClause += segments[i];
 
-          App.wordsList.push({
-            index: wordIndex,
-            raw: tok,
-            clean: clean,
-            element: span,
-            top: 0
-          });
-          wordIndex++;
-        });
+          // If ending punctuation or end of paragraph
+          if (i % 2 === 1 || i === segments.length - 1) {
+            const rawClause = accumulatedClause.trim();
+            if (rawClause) {
+              const cleanWords = normalizeVn(rawClause).split(/\s+/).filter(w => w.length > 0);
+
+              if (cleanWords.length > 0) {
+                // Extract head words (first 2-3 words) and tail words (last 2-3 words)
+                const headWords = cleanWords.slice(0, 3);
+                const tailWords = cleanWords.slice(-3);
+
+                const span = document.createElement('span');
+                span.textContent = rawClause + ' ';
+                span.id = `cue-sentence-${sentenceIndex}`;
+                span.dataset.index = sentenceIndex;
+                span.className = sentenceIndex === 0 ? 'cue-sentence sentence-active' : 'cue-sentence sentence-upcoming';
+                p.appendChild(span);
+
+                App.sentencesList.push({
+                  index: sentenceIndex,
+                  raw: rawClause,
+                  clean: cleanWords.join(' '),
+                  cleanWords: cleanWords,
+                  headWords: headWords,
+                  tailWords: tailWords,
+                  headString: headWords.join(' '),
+                  tailString: tailWords.join(' '),
+                  element: span,
+                  top: 0
+                });
+
+                sentenceIndex++;
+              }
+            }
+            accumulatedClause = '';
+          }
+        }
 
         UI.prompterTextCanvas.appendChild(p);
       });
@@ -1108,7 +1131,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 7. HIGH-PRECISION SPEECH ENGINE & WORD PROGRESSION */
+    /* 7. HEAD-TAIL VOICE ENGINE (Zero DOM Lag & Forward Leap) */
     /* ============================================================== */
     function initSpeechEngine() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1129,7 +1152,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
           UI.micIndicator.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
           UI.btnVoiceToggle.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500');
           UI.voiceToast.classList.remove('hidden');
-          UI.voiceToastText.textContent = 'Đang lắng nghe giọng nói theo từng chữ...';
+          UI.voiceToastText.textContent = 'Đang nhận diện giọng nói (Đầu/Cuối câu thông minh)...';
         };
 
         sr.onresult = (event) => {
@@ -1139,7 +1162,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
           }
           heardChunk = heardChunk.trim();
           if (heardChunk) {
-            processHeardWords(heardChunk);
+            processHeardTranscript(heardChunk);
           }
         };
 
@@ -1181,80 +1204,79 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /**
-     * Process Spoken Words:
-     * - Searches sequentially in a sliding forward window around currentWordIdx.
-     * - When words on the current line finish and move to the next line,
-     *   sets targetY so the LERP frame loop glides to the new line smoothly!
+     * Head-Tail Voice Processor:
+     * - Only checks FORWARD sentences from App.currentSentenceIdx to App.currentSentenceIdx + 4.
+     * - Past sentences are permanently locked out (NEVER jump backwards!).
+     * - If user speaks words of sentence K+1 or K+2, immediately jumps the pointer forward!
+     * - Pre-cached coordinates -> Zero DOM layout queries -> ZERO LAG!
      */
-    function processHeardWords(transcript) {
-      if (!App.wordsList || App.wordsList.length === 0) return;
+    function processHeardTranscript(transcript) {
+      if (!App.sentencesList || App.sentencesList.length === 0) return;
 
-      const rawTokens = transcript.split(/\s+/).filter(w => w.length > 0);
-      const cleanTokens = rawTokens.map(w => normalizeVn(w)).filter(w => w.length > 0);
-      if (cleanTokens.length === 0) return;
+      const cleanSpoken = normalizeVn(transcript);
+      if (!cleanSpoken) return;
 
-      // Scan through heard tokens
-      for (let t = 0; t < cleanTokens.length; t++) {
-        const spokenWord = cleanTokens[t];
-        // Look ahead within a forward window of 7 words to allow minor skipped filler words
-        const searchStart = App.currentWordIdx;
-        const searchEnd = Math.min(App.wordsList.length, App.currentWordIdx + 7);
+      const currentIdx = App.currentSentenceIdx;
+      const currentSentence = App.sentencesList[currentIdx];
 
-        for (let i = searchStart; i < searchEnd; i++) {
-          const scriptItem = App.wordsList[i];
-          if (scriptItem.clean === spokenWord || (scriptItem.clean.length > 3 && spokenWord.includes(scriptItem.clean))) {
-            // Match found! Advance word pointer
-            App.currentWordIdx = i + 1;
-            onWordRecognized(i);
-            break;
-          }
+      // 1. Check if the current sentence is ending (matched tail words)
+      if (currentSentence && currentSentence.tailWords.length > 0) {
+        const tailMatchCount = currentSentence.tailWords.filter(w => cleanSpoken.includes(w)).length;
+        if (tailMatchCount >= Math.min(2, currentSentence.tailWords.length)) {
+          // Finished reading current sentence! Advance to next sentence!
+          advanceToSentence(currentIdx + 1);
+          UI.voiceToastText.textContent = `Xong câu: "${currentSentence.raw.slice(-25)}"`;
+          return;
         }
       }
 
-      UI.voiceToastText.textContent = `Đang đọc: "${transcript.slice(-30)}"`;
-    }
-
-    function onWordRecognized(matchedIdx) {
-      const matchedItem = App.wordsList[matchedIdx];
-      if (!matchedItem) return;
-
-      // Update styling for spoken/current/pending words
-      updateWordVisuals();
-
-      // Read physical top position of current word
-      const wordTop = matchedItem.element.offsetTop;
-
-      // If the word has moved to a new line (or initial line)
-      if (Math.abs(wordTop - App.currentLineTop) > 10) {
-        App.currentLineTop = wordTop;
-        // The target scroll position places this line exactly at the 30% eye-line marker!
-        const eyeLineTargetY = window.innerHeight * 0.30;
-        App.targetY = Math.max(0, Math.min(App.maxY, wordTop - eyeLineTargetY));
+      // 2. Check if user is reading fast ahead: look ahead up to 4 sentences
+      const lookAheadEnd = Math.min(App.sentencesList.length, currentIdx + 4);
+      for (let nextIdx = currentIdx + 1; nextIdx < lookAheadEnd; nextIdx++) {
+        const candidate = App.sentencesList[nextIdx];
+        // Check candidate head words (first 2-3 words)
+        const headMatchCount = candidate.headWords.filter(w => cleanSpoken.includes(w)).length;
+        if (headMatchCount >= Math.min(2, candidate.headWords.length)) {
+          // Fast-forward leap to this sentence!
+          advanceToSentence(nextIdx);
+          UI.voiceToastText.textContent = `Lướt nhanh tới câu ${nextIdx + 1}: "${candidate.raw.slice(0, 25)}..."`;
+          return;
+        }
       }
     }
 
-    function updateWordVisuals() {
-      if (!App.wordsList) return;
+    function advanceToSentence(newIdx) {
+      if (newIdx >= App.sentencesList.length) newIdx = App.sentencesList.length - 1;
+      if (newIdx <= App.currentSentenceIdx && App.currentSentenceIdx !== 0) return; // Monotonic forward progression only
 
-      const currentIdx = App.currentWordIdx - 1;
-      const activeLineTop = (currentIdx >= 0 && App.wordsList[currentIdx]) ? App.wordsList[currentIdx].element.offsetTop : -1;
+      App.currentSentenceIdx = newIdx;
+      updateSentenceVisuals();
 
-      App.wordsList.forEach((item, idx) => {
-        item.element.classList.remove('word-spoken', 'word-current', 'word-active-line', 'word-pending');
+      const activeItem = App.sentencesList[newIdx];
+      if (activeItem) {
+        // Use pre-cached top position (Zero DOM query!)
+        const targetScroll = activeItem.top - (window.innerHeight * 0.30);
+        App.targetY = Math.max(0, Math.min(App.maxY, targetScroll));
+      }
+    }
 
-        if (idx === currentIdx) {
-          // Current spoken word
-          item.element.classList.add('word-current');
-        } else if (idx < currentIdx) {
-          // Already read word
-          item.element.classList.add('word-spoken');
+    function updateSentenceVisuals() {
+      if (!App.sentencesList) return;
+
+      const curIdx = App.currentSentenceIdx;
+
+      App.sentencesList.forEach((item, idx) => {
+        item.element.classList.remove('sentence-passed', 'sentence-active', 'sentence-upcoming');
+
+        if (idx < curIdx) {
+          // Past sentence: permanently dimmed, locked out
+          item.element.classList.add('sentence-passed');
+        } else if (idx === curIdx) {
+          // Current active sentence: glowing highlight
+          item.element.classList.add('sentence-active');
         } else {
-          // If on the same line as current word, mark as active line
-          if (activeLineTop !== -1 && Math.abs(item.element.offsetTop - activeLineTop) <= 8) {
-            item.element.classList.add('word-active-line');
-          } else {
-            item.element.classList.add('word-pending');
-          }
+          // Upcoming sentence: clear text
+          item.element.classList.add('sentence-upcoming');
         }
       });
     }
@@ -1365,7 +1387,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     });
 
     /* ============================================================== */
-    /* 10. EVENT LISTENERS */
+    /* 10. EVENT LISTENERS (0.1 SPEED PRECISION & CONTROLS) */
     /* ============================================================== */
     function setupEventListeners() {
       UI.scriptInput.addEventListener('input', updateScriptStats);
@@ -1421,43 +1443,34 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         saveSettings();
       });
 
-      // Speed Sliders
-      UI.editorSpeedSlider.addEventListener('input', (e) => {
-        App.speedLevel = parseFloat(e.target.value);
-        UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
-        UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
-        UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
-        UI.prompterSpeedSlider.value = App.speedLevel;
+      // Speed Sliders (Step 0.1)
+      function updateSpeed(newVal) {
+        newVal = Math.max(0.5, Math.min(10, Math.round(newVal * 10) / 10));
+        App.speedLevel = newVal;
+        const formatted = newVal.toFixed(1);
+        UI.editorSpeedVal.textContent = formatted;
+        UI.editorSpeedWpm.textContent = getApproxWPM(newVal);
+        UI.prompterSpeedDisplay.textContent = formatted;
+        UI.prompterSpeedSlider.value = newVal;
+        UI.editorSpeedSlider.value = newVal;
         saveSettings();
+      }
+
+      UI.editorSpeedSlider.addEventListener('input', (e) => {
+        updateSpeed(parseFloat(e.target.value));
       });
 
       UI.prompterSpeedSlider.addEventListener('input', (e) => {
-        App.speedLevel = parseFloat(e.target.value);
-        UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
-        UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
-        UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
-        UI.editorSpeedSlider.value = App.speedLevel;
-        saveSettings();
+        updateSpeed(parseFloat(e.target.value));
       });
 
+      // Step 0.1 Up / Down
       UI.btnSpeedUp.addEventListener('click', () => {
-        App.speedLevel = Math.min(10, App.speedLevel + 0.5);
-        UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
-        UI.prompterSpeedSlider.value = App.speedLevel;
-        UI.editorSpeedSlider.value = App.speedLevel;
-        UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
-        UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
-        saveSettings();
+        updateSpeed(App.speedLevel + 0.1);
       });
 
       UI.btnSpeedDown.addEventListener('click', () => {
-        App.speedLevel = Math.max(0.5, App.speedLevel - 0.5);
-        UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
-        UI.prompterSpeedSlider.value = App.speedLevel;
-        UI.editorSpeedSlider.value = App.speedLevel;
-        UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
-        UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
-        saveSettings();
+        updateSpeed(App.speedLevel - 0.1);
       });
 
       // Font Size Sliders (20px to 120px)
@@ -1594,25 +1607,13 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
           case 'ArrowUp':
             e.preventDefault();
             if (App.isPrompterActive) {
-              App.speedLevel = Math.min(10, App.speedLevel + 0.5);
-              UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
-              UI.prompterSpeedSlider.value = App.speedLevel;
-              UI.editorSpeedSlider.value = App.speedLevel;
-              UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
-              UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
-              saveSettings();
+              updateSpeed(App.speedLevel + 0.1);
             }
             break;
           case 'ArrowDown':
             e.preventDefault();
             if (App.isPrompterActive) {
-              App.speedLevel = Math.max(0.5, App.speedLevel - 0.5);
-              UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
-              UI.prompterSpeedSlider.value = App.speedLevel;
-              UI.editorSpeedSlider.value = App.speedLevel;
-              UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
-              UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
-              saveSettings();
+              updateSpeed(App.speedLevel - 0.1);
             }
             break;
           case 'ArrowLeft':
