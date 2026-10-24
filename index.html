@@ -119,7 +119,7 @@
   <!-- ============================================================== -->
   <!-- 1. EDITOR SCREEN (Màn hình Soạn Thảo & Cài Đặt) -->
   <!-- ============================================================== -->
-  <div id="editorScreen" class="min-h-screen flex flex-col justify-between p-4 md:p-8 max-w-6xl mx-auto transition-opacity duration-300">
+  <div id="editorScreen" class="min-h-screen flex flex-col justify-between p-4 md:p-8 max-w-7xl mx-auto transition-opacity duration-300">
     <!-- Top Brand Header -->
     <header class="flex items-center justify-between pb-6 border-b border-slate-800/80">
       <div class="flex items-center space-x-3.5">
@@ -133,9 +133,9 @@
             <h1 class="text-xl md:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
               CuePrompter Pro
             </h1>
-            <span class="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">Ultra 120Hz</span>
+            <span class="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">Full-Width Responsive</span>
           </div>
-          <p class="text-xs text-slate-400">Máy nhắc chữ cuộn mượt 60-144fps • Hỗ trợ AI nhận diện giọng nói tiếng Việt</p>
+          <p class="text-xs text-slate-400">Cuộn mượt 60-144fps • Tự động co giãn theo tỉ lệ màn hình Máy tính & iPad</p>
         </div>
       </div>
 
@@ -184,7 +184,7 @@
         </div>
 
         <div class="relative">
-          <textarea id="scriptInput" rows="18" placeholder="Nhập hoặc dán kịch bản của bạn vào đây...&#10;&#10;Mẹo: Ngắt thành các câu vừa phải để dễ theo dõi hơn khi đứng trước ống kính camera!" class="w-full bg-[#11131a] border border-slate-800 rounded-2xl p-6 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/80 focus:border-transparent transition resize-y font-prompter text-lg leading-relaxed shadow-inner"></textarea>
+          <textarea id="scriptInput" rows="18" placeholder="Nhập hoặc dán kịch bản của bạn vào đây...&#10;&#10;Mẹo: Bạn có thể chỉnh độ rộng chữ lên 95% - 100% để chữ tràn toàn màn hình trên máy tính và iPad!" class="w-full bg-[#11131a] border border-slate-800 rounded-2xl p-6 text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/80 focus:border-transparent transition resize-y font-prompter text-lg leading-relaxed shadow-inner"></textarea>
         </div>
       </div>
 
@@ -213,7 +213,35 @@
           </div>
         </div>
 
-        <!-- Speed Preset (Level 1 to 10 with granular steps) -->
+        <!-- Text Width (Độ rộng chữ theo % màn hình) -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+            <span class="text-slate-300">Độ rộng chữ (Tỉ lệ màn)</span>
+            <span id="editorWidthVal" class="text-indigo-400 font-mono font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">95% (Tràn màn)</span>
+          </div>
+          <input type="range" id="editorWidthSlider" min="50" max="100" step="5" value="95" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+            <span>50% (Hẹp)</span>
+            <span>75% (Vừa)</span>
+            <span>100% (Full màn)</span>
+          </div>
+        </div>
+
+        <!-- Font Size Preset (20px to 120px) -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+            <span class="text-slate-300">Cỡ chữ hiển thị</span>
+            <span id="editorFontSizeVal" class="text-indigo-400 font-mono font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">56px</span>
+          </div>
+          <input type="range" id="editorFontSizeSlider" min="20" max="120" step="2" value="56" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+            <span>20px</span>
+            <span>56px</span>
+            <span>120px</span>
+          </div>
+        </div>
+
+        <!-- Speed Preset (Level 0.5 to 10.0) -->
         <div>
           <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
             <span class="text-slate-300">Tốc độ cuộn</span>
@@ -222,25 +250,6 @@
             </span>
           </div>
           <input type="range" id="editorSpeedSlider" min="0.5" max="10" step="0.5" value="3.5" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
-          <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
-            <span>0.5 (Chậm)</span>
-            <span>3.5 (Chuẩn)</span>
-            <span>10 (Cực nhanh)</span>
-          </div>
-        </div>
-
-        <!-- Font Size Preset -->
-        <div>
-          <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
-            <span class="text-slate-300">Cỡ chữ hiển thị</span>
-            <span id="editorFontSizeVal" class="text-indigo-400 font-mono font-bold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">48px</span>
-          </div>
-          <input type="range" id="editorFontSizeSlider" min="20" max="96" step="2" value="48" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
-          <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
-            <span>20px</span>
-            <span>48px</span>
-            <span>96px</span>
-          </div>
         </div>
 
         <!-- Line Height -->
@@ -302,7 +311,7 @@
 
     <!-- Footer -->
     <footer class="pt-4 border-t border-slate-800/80 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
-      <p>CuePrompter Pro • Cuộn chữ mượt như CuePrompter với công nghệ GPU Transform</p>
+      <p>CuePrompter Pro • Tự động thích ứng mọi kích thước màn hình PC, Laptop, iPad & Tablet</p>
       <p class="flex items-center space-x-2">
         <span>Nhấn <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-mono">Space</kbd> để chạy / dừng</span>
       </p>
@@ -316,7 +325,7 @@
   <div id="prompterScreen" class="hidden fixed inset-0 z-40 bg-black text-white select-none overflow-hidden">
 
     <!-- FLOATING TOP CONTROL BAR (CuePrompter Sleek Style) -->
-    <header id="controlHeader" class="fixed top-3 left-1/2 transform -translate-x-1/2 z-50 w-[96%] max-w-5xl transition-all duration-300 ease-in-out">
+    <header id="controlHeader" class="fixed top-3 left-1/2 transform -translate-x-1/2 z-50 w-[96%] max-w-6xl transition-all duration-300 ease-in-out">
       <div class="bg-[#12141c]/95 backdrop-blur-xl border border-slate-700/80 rounded-2xl shadow-2xl p-2.5 md:p-3 flex flex-wrap items-center justify-between gap-2.5 text-slate-200 ring-1 ring-white/10">
         
         <!-- Left group: Back, Play/Pause, Reverse/Forward Jump, Reset -->
@@ -354,36 +363,44 @@
           </button>
 
           <!-- Reading Stopwatch -->
-          <div class="hidden lg:flex items-center space-x-1 px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 font-mono text-xs">
+          <div class="hidden xl:flex items-center space-x-1 px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 font-mono text-xs">
             <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span id="prompterTimer" class="font-bold tracking-wider text-indigo-300">00:00</span>
           </div>
         </div>
 
-        <!-- Center group: Speed & Font Controls -->
-        <div class="flex items-center space-x-2 md:space-x-3">
+        <!-- Center group: Width, Speed, Font Controls -->
+        <div class="flex items-center space-x-2 md:space-x-2.5">
+          <!-- Width (Độ rộng chữ theo %) -->
+          <div class="flex items-center space-x-1.5 bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-700/60" title="Chỉnh độ rộng chữ tràn màn hình">
+            <svg class="w-3.5 h-3.5 text-indigo-400 hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            <span class="text-xs text-slate-400 font-medium hidden md:inline">Rộng:</span>
+            <span id="prompterWidthDisplay" class="font-mono text-xs font-bold text-indigo-400 min-w-[34px] text-center">95%</span>
+            <input type="range" id="prompterWidthSlider" min="50" max="100" step="5" value="95" class="w-14 md:w-20 h-1.5 bg-slate-700 rounded cursor-pointer">
+          </div>
+
           <!-- Speed Control -->
-          <div class="flex items-center space-x-1.5 bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-700/60">
+          <div class="flex items-center space-x-1 bg-slate-800/80 px-2 py-1.5 rounded-xl border border-slate-700/60">
             <span class="text-xs text-slate-400 font-medium hidden md:inline">Tốc độ:</span>
-            <button id="btnSpeedDown" title="Giảm tốc độ (↓)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">-</button>
-            <span id="prompterSpeedDisplay" class="font-mono text-xs font-bold text-indigo-400 min-w-[34px] text-center">3.5</span>
-            <button id="btnSpeedUp" title="Tăng tốc độ (↑)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">+</button>
-            <input type="range" id="prompterSpeedSlider" min="0.5" max="10" step="0.5" value="3.5" class="w-16 md:w-20 h-1.5 bg-slate-700 rounded cursor-pointer">
+            <button id="btnSpeedDown" title="Giảm tốc độ (↓)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">-</button>
+            <span id="prompterSpeedDisplay" class="font-mono text-xs font-bold text-indigo-400 min-w-[28px] text-center">3.5</span>
+            <button id="btnSpeedUp" title="Tăng tốc độ (↑)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">+</button>
+            <input type="range" id="prompterSpeedSlider" min="0.5" max="10" step="0.5" value="3.5" class="w-14 md:w-16 h-1.5 bg-slate-700 rounded cursor-pointer">
           </div>
 
           <!-- Font Size Control -->
-          <div class="flex items-center space-x-1 bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-700/60">
+          <div class="flex items-center space-x-1 bg-slate-800/80 px-2 py-1.5 rounded-xl border border-slate-700/60">
             <span class="text-xs text-slate-400 font-medium hidden md:inline">Cỡ:</span>
-            <button id="btnFontDown" title="Giảm cỡ chữ" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">A-</button>
-            <span id="prompterFontSizeDisplay" class="font-mono text-xs font-bold text-slate-200 min-w-[28px] text-center">48</span>
-            <button id="btnFontUp" title="Tăng cỡ chữ" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">A+</button>
+            <button id="btnFontDown" title="Giảm cỡ chữ" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">A-</button>
+            <span id="prompterFontSizeDisplay" class="font-mono text-xs font-bold text-slate-200 min-w-[26px] text-center">56</span>
+            <button id="btnFontUp" title="Tăng cỡ chữ" class="w-6 h-6 flex items-center justify-center rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold transition text-xs">A+</button>
           </div>
         </div>
 
         <!-- Right group: Voice Tracking, Mirror, Theme, Fullscreen -->
         <div class="flex items-center space-x-1.5">
           <!-- Voice Recognition Button -->
-          <button id="btnVoiceToggle" title="Bật/Tắt theo dõi giọng nói tiếng Việt" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center space-x-1.5 border border-slate-700 transition">
+          <button id="btnVoiceToggle" title="Bật/Tắt theo dõi giọng nói tiếng Việt" class="px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center space-x-1.5 border border-slate-700 transition">
             <div id="micIndicator" class="w-2.5 h-2.5 rounded-full bg-slate-500"></div>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
@@ -472,7 +489,8 @@
       <div id="prompterMirrorWrapper" class="w-full h-full transition-transform duration-200">
         <!-- Hardware Accelerated Scrolling Layer (translate3d) -->
         <div id="prompterGpuLayer" class="gpu-scroll-layer w-full min-h-full">
-          <div id="prompterContainer" class="max-w-4xl mx-auto px-6 md:px-14 pt-[30vh] pb-[70vh]">
+          <!-- Dynamic Full-Width Container (Responsive for PC & iPad) -->
+          <div id="prompterContainer" class="mx-auto pt-[30vh] pb-[70vh] transition-all duration-150">
             <div id="prompterTextCanvas" class="font-prompter font-bold tracking-wide transition-all whitespace-pre-wrap">
               <!-- Script text elements rendered here -->
             </div>
@@ -536,30 +554,31 @@
 
 
   <!-- ============================================================== -->
-  <!-- 4. CORE ENGINE JAVASCRIPT (GPU COMPOSITOR + VOICE TRACKING) -->
+  <!-- 4. CORE ENGINE JAVASCRIPT (GPU COMPOSITOR + FULL WIDTH) -->
   <!-- ============================================================== -->
   <script>
     /**
-     * CuePrompter Pro - Ultra-Smooth GPU Transform Teleprompter Engine
+     * CuePrompter Pro - Responsive Full-Width GPU Transform Engine
      */
     const App = {
       // Configuration
-      speedLevel: 3.5, // Levels from 0.5 to 10.0 (Step 0.5)
-      fontSize: 48,    // 20px to 96px
-      lineHeight: 1.7, // 1.3 to 2.4
+      contentWidth: 95, // 50% to 100% of screen width (Default 95% full screen)
+      speedLevel: 3.5,  // 0.5 to 10.0
+      fontSize: 56,     // 20px to 120px
+      lineHeight: 1.7,  // 1.3 to 2.4
       textAlign: 'center',
-      theme: 'dark',   // 'dark', 'light', 'sepia'
+      theme: 'dark',    // 'dark', 'light', 'sepia'
       flipX: false,
       flipY: false,
       showEyeline: true,
       useCountdown: true,
-      mode: 'speed',   // 'speed' or 'voice'
+      mode: 'speed',    // 'speed' or 'voice'
 
       // Motion State
       isPlaying: false,
       isPrompterActive: false,
-      currentY: 0,     // GPU translate3d Y position in pixels (Float)
-      maxY: 0,         // Maximum scroll bound
+      currentY: 0,
+      maxY: 0,
       rafId: null,
       lastFrameTime: 0,
 
@@ -588,11 +607,13 @@ Khi quay video hoặc thuyết trình trước máy quay, việc đảo mắt ho
 
 Thứ nhất: Tốc độ cuộn chữ đạt độ mượt tuyệt đối 60-144fps nhờ công nghệ GPU Transform translate3d, loại bỏ hoàn toàn hiện tượng khựng giật của thanh cuộn trình duyệt truyền thống.
 
-Thứ hai: Bạn có thể dùng chuột lăn (Scroll Wheel) hoặc vuốt cảm ứng để tua kịch bản nhanh chóng mà không làm mất nhịp đọc.
+Thứ hai: Độ rộng văn bản tự động co giãn tràn màn hình theo tỉ lệ của từng thiết bị như iPad, máy tính bàn và laptop, giúp mắt bạn dễ dàng đọc các chữ to mà không bị gò bó ở giữa!
 
-Thứ ba: Chế độ đếm ngược 3 giây thông minh giúp bạn hít thở sâu và sẵn sàng thần thái tốt nhất trước khi bấm máy ghi hình.
+Thứ ba: Bạn có thể dùng chuột lăn (Scroll Wheel) hoặc vuốt cảm ứng để tua kịch bản nhanh chóng mà không làm mất nhịp đọc.
 
-Thứ tư: Chế độ nhận diện giọng nói tiếng Việt tự động căn chỉnh từng câu bạn nói vào đúng vạch tiêu điểm 30% mắt nhìn.
+Thứ tư: Chế độ đếm ngược 3 giây thông minh giúp bạn hít thở sâu và sẵn sàng thần thái tốt nhất trước khi bấm máy ghi hình.
+
+Thứ năm: Chế độ nhận diện giọng nói tiếng Việt tự động căn chỉnh từng câu bạn nói vào đúng vạch tiêu điểm 30% mắt nhìn.
 
 Chúc các bạn có những thước phim và bài thuyết trình chuyên nghiệp, cuốn hút và thành công rực rỡ!`;
 
@@ -611,6 +632,8 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       // Settings Inputs
       tabModeSpeed: document.getElementById('tabModeSpeed'),
       tabModeVoice: document.getElementById('tabModeVoice'),
+      editorWidthSlider: document.getElementById('editorWidthSlider'),
+      editorWidthVal: document.getElementById('editorWidthVal'),
       editorSpeedSlider: document.getElementById('editorSpeedSlider'),
       editorSpeedVal: document.getElementById('editorSpeedVal'),
       editorSpeedWpm: document.getElementById('editorSpeedWpm'),
@@ -634,6 +657,8 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       btnJumpForward: document.getElementById('btnJumpForward'),
       btnResetScroll: document.getElementById('btnResetScroll'),
       prompterTimer: document.getElementById('prompterTimer'),
+      prompterWidthDisplay: document.getElementById('prompterWidthDisplay'),
+      prompterWidthSlider: document.getElementById('prompterWidthSlider'),
       btnSpeedDown: document.getElementById('btnSpeedDown'),
       btnSpeedUp: document.getElementById('btnSpeedUp'),
       prompterSpeedDisplay: document.getElementById('prompterSpeedDisplay'),
@@ -678,8 +703,9 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         const savedSettings = localStorage.getItem('cueprompter_settings');
         if (savedSettings) {
           const parsed = JSON.parse(savedSettings);
+          App.contentWidth = parsed.contentWidth ?? 95;
           App.speedLevel = parsed.speedLevel ?? 3.5;
-          App.fontSize = parsed.fontSize ?? 48;
+          App.fontSize = parsed.fontSize ?? 56;
           App.lineHeight = parsed.lineHeight ?? 1.7;
           App.textAlign = parsed.textAlign ?? 'center';
           App.theme = parsed.theme ?? 'dark';
@@ -700,6 +726,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     function saveSettings() {
       try {
         const toSave = {
+          contentWidth: App.contentWidth,
           speedLevel: App.speedLevel,
           fontSize: App.fontSize,
           lineHeight: App.lineHeight,
@@ -718,7 +745,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 2. STATS & SCRIPT PARSING */
+    /* 2. STATS & PARSING */
     /* ============================================================== */
     function updateScriptStats() {
       const text = UI.scriptInput.value.trim();
@@ -736,31 +763,19 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       saveSettings();
     }
 
-    /* ============================================================== */
-    /* 3. SPEED CONVERSION: LEVEL TO PIXELS PER SECOND */
-    /* ============================================================== */
-    /**
-     * Map Speed Level (0.5 to 10.0) smoothly to Pixels Per Second:
-     * Level 0.5 = 20 px/sec (very slow)
-     * Level 3.5 = 75 px/sec (~140 wpm standard talking speed)
-     * Level 10.0 = 300 px/sec (very fast skim)
-     */
     function getPixelsPerSecond(level) {
       return 15 + Math.pow(level, 1.35) * 12.5;
     }
 
     function getApproxWPM(level) {
-      // Rough correlation: 75 px/sec with font 48px ~ 140 wpm
       return Math.round(level * 40);
     }
 
     /* ============================================================== */
-    /* 4. GPU TRANSFORM SCROLL ENGINE (Ultra Smooth 60-144Hz) */
+    /* 3. GPU TRANSFORM SCROLL ENGINE (Ultra Smooth 60-144Hz) */
     /* ============================================================== */
     function updateGpuTransform() {
-      // Clamp between 0 and maxY
       App.currentY = Math.max(0, Math.min(App.maxY, App.currentY));
-      // Hardware Accelerated Translate3d (Zero layout reflow!)
       UI.prompterGpuLayer.style.transform = `translate3d(0, -${App.currentY}px, 0)`;
     }
 
@@ -775,7 +790,6 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       App.isPlaying = true;
       App.lastFrameTime = performance.now();
 
-      // UI state
       UI.btnPlayPause.classList.remove('bg-emerald-600', 'hover:bg-emerald-500', 'shadow-emerald-600/35');
       UI.btnPlayPause.classList.add('bg-amber-600', 'hover:bg-amber-500', 'shadow-amber-600/35');
       UI.playPauseIcon.innerHTML = `<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
@@ -824,9 +838,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
       const deltaMs = now - App.lastFrameTime;
       App.lastFrameTime = now;
 
-      // Cap delta time to 60ms to avoid jumping if user unfocuses browser tab
       const safeDeltaMs = Math.min(deltaMs, 60);
-
       const pxPerSec = getPixelsPerSecond(App.speedLevel);
       const increment = (pxPerSec * safeDeltaMs) / 1000;
 
@@ -855,7 +867,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 5. COUNTDOWN OVERLAY (3, 2, 1, GO!) */
+    /* 4. COUNTDOWN OVERLAY */
     /* ============================================================== */
     function triggerCountdown(onComplete) {
       App.isCountingDown = true;
@@ -870,7 +882,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         if (count > 0) {
           UI.countdownNumber.textContent = count;
           UI.countdownNumber.classList.remove('animate-count-pop');
-          void UI.countdownNumber.offsetWidth; // retrigger css animation
+          void UI.countdownNumber.offsetWidth;
           UI.countdownNumber.classList.add('animate-count-pop');
         } else {
           clearInterval(App.countdownInterval);
@@ -893,7 +905,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 6. STOPWATCH TIMER */
+    /* 5. STOPWATCH TIMER */
     /* ============================================================== */
     function startTimer() {
       if (App.timerInterval) return;
@@ -919,7 +931,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 7. PREPARE TEXT CANVAS & SPEECH CHUNKS */
+    /* 6. CANVAS & FULL-WIDTH SCALING */
     /* ============================================================== */
     function renderPrompterCanvas() {
       const text = App.scriptText.trim();
@@ -945,7 +957,6 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         const p = document.createElement('p');
         p.className = 'mb-8';
 
-        // Split paragraph by sentences
         const segments = para.split(/([.?!,;\n]+)/g);
         let currentChunk = '';
 
@@ -974,26 +985,35 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         UI.prompterTextCanvas.appendChild(p);
       });
 
-      // Apply styling
       applyCanvasStyles();
-      // Recalculate scroll dimensions
-      setTimeout(calculateMaxScroll, 50);
+      setTimeout(calculateMaxScroll, 60);
     }
 
     function applyCanvasStyles() {
+      // Dynamic Full-Width Container Sizing
+      UI.prompterContainer.style.width = `${App.contentWidth}%`;
+      UI.prompterContainer.style.maxWidth = `${App.contentWidth}vw`;
+      UI.prompterContainer.style.paddingLeft = '1rem';
+      UI.prompterContainer.style.paddingRight = '1rem';
+
+      // Typography
       UI.prompterTextCanvas.style.fontSize = `${App.fontSize}px`;
       UI.prompterTextCanvas.style.lineHeight = App.lineHeight;
       UI.prompterTextCanvas.style.textAlign = App.textAlign;
+
+      // Controls sync
+      UI.prompterWidthDisplay.textContent = `${App.contentWidth}%`;
+      UI.prompterWidthSlider.value = App.contentWidth;
       UI.prompterSpeedDisplay.textContent = App.speedLevel.toFixed(1);
       UI.prompterSpeedSlider.value = App.speedLevel;
       UI.prompterFontSizeDisplay.textContent = App.fontSize;
       UI.eyelineMarker.style.opacity = App.showEyeline ? '1' : '0';
+
       applyMirror();
       applyTheme();
     }
 
     function applyMirror() {
-      // Toggle button highlights
       if (App.flipX) {
         UI.btnFlipX.classList.add('bg-indigo-600', 'text-white');
         UI.btnFlipX.classList.remove('bg-slate-800', 'text-slate-300');
@@ -1034,7 +1054,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 8. WEB SPEECH API (SMART VOICE FOLLOW) */
+    /* 7. WEB SPEECH API (SMART VOICE FOLLOW) */
     /* ============================================================== */
     function initSpeechEngine() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1128,7 +1148,6 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         document.querySelectorAll('.speech-highlight').forEach(el => el.classList.remove('speech-highlight'));
         bestItem.element.classList.add('speech-highlight');
 
-        // Align current chunk to eye-line marker (~30% of viewport)
         const rect = bestItem.element.getBoundingClientRect();
         const targetY = window.innerHeight * 0.30;
         const diff = rect.top - targetY;
@@ -1143,17 +1162,15 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 9. MOUSE WHEEL & TOUCH SCRUBBING */
+    /* 8. MOUSE WHEEL & TOUCH SCRUBBING */
     /* ============================================================== */
     function setupInteractions() {
-      // Natural Mouse Wheel scrolling without layout jank
       UI.prompterViewport.addEventListener('wheel', (e) => {
         e.preventDefault();
         App.currentY += e.deltaY * 0.85;
         updateGpuTransform();
       }, { passive: false });
 
-      // Touch drag scrolling for iPads / tablets
       let startTouchY = 0;
       let startScrollY = 0;
 
@@ -1172,7 +1189,6 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         }
       }, { passive: true });
 
-      // Auto-hide top control header when idle
       let idleTimer = null;
       window.addEventListener('mousemove', () => {
         if (!App.isPrompterActive) return;
@@ -1184,10 +1200,16 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
           }, 2400);
         }
       });
+
+      // Recalculate dimensions on screen resize / orientation change (iPad rotation)
+      window.addEventListener('resize', () => {
+        calculateMaxScroll();
+        applyCanvasStyles();
+      });
     }
 
     /* ============================================================== */
-    /* 10. SCREEN SWITCHING & FULLSCREEN */
+    /* 9. SCREEN SWITCHING & FULLSCREEN */
     /* ============================================================== */
     function openPrompter() {
       App.scriptText = UI.scriptInput.value;
@@ -1244,7 +1266,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     });
 
     /* ============================================================== */
-    /* 11. EVENT LISTENERS */
+    /* 10. EVENT LISTENERS */
     /* ============================================================== */
     function setupEventListeners() {
       UI.scriptInput.addEventListener('input', updateScriptStats);
@@ -1276,6 +1298,27 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         App.mode = 'voice';
         UI.tabModeVoice.className = 'py-2 px-2 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition';
         UI.tabModeSpeed.className = 'py-2 px-2 rounded-lg text-slate-400 hover:text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition';
+        saveSettings();
+      });
+
+      // Width Sliders (Độ rộng chữ 50% - 100%)
+      UI.editorWidthSlider.addEventListener('input', (e) => {
+        App.contentWidth = parseInt(e.target.value, 10);
+        UI.editorWidthVal.textContent = `${App.contentWidth}%${App.contentWidth >= 90 ? ' (Tràn màn)' : ''}`;
+        UI.prompterWidthDisplay.textContent = `${App.contentWidth}%`;
+        UI.prompterWidthSlider.value = App.contentWidth;
+        applyCanvasStyles();
+        calculateMaxScroll();
+        saveSettings();
+      });
+
+      UI.prompterWidthSlider.addEventListener('input', (e) => {
+        App.contentWidth = parseInt(e.target.value, 10);
+        UI.editorWidthVal.textContent = `${App.contentWidth}%${App.contentWidth >= 90 ? ' (Tràn màn)' : ''}`;
+        UI.prompterWidthDisplay.textContent = `${App.contentWidth}%`;
+        UI.editorWidthSlider.value = App.contentWidth;
+        applyCanvasStyles();
+        calculateMaxScroll();
         saveSettings();
       });
 
@@ -1318,19 +1361,21 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         saveSettings();
       });
 
-      // Font Size Sliders
+      // Font Size Sliders (20px to 120px)
       UI.editorFontSizeSlider.addEventListener('input', (e) => {
         App.fontSize = parseInt(e.target.value, 10);
         UI.editorFontSizeVal.textContent = `${App.fontSize}px`;
         applyCanvasStyles();
+        calculateMaxScroll();
         saveSettings();
       });
 
       UI.btnFontUp.addEventListener('click', () => {
-        App.fontSize = Math.min(96, App.fontSize + 4);
+        App.fontSize = Math.min(120, App.fontSize + 4);
         UI.editorFontSizeSlider.value = App.fontSize;
         UI.editorFontSizeVal.textContent = `${App.fontSize}px`;
         applyCanvasStyles();
+        calculateMaxScroll();
         saveSettings();
       });
 
@@ -1339,6 +1384,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         UI.editorFontSizeSlider.value = App.fontSize;
         UI.editorFontSizeVal.textContent = `${App.fontSize}px`;
         applyCanvasStyles();
+        calculateMaxScroll();
         saveSettings();
       });
 
@@ -1347,6 +1393,7 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
         App.lineHeight = parseFloat(e.target.value);
         UI.editorLineHeightVal.textContent = `${App.lineHeight}x`;
         applyCanvasStyles();
+        calculateMaxScroll();
         saveSettings();
       });
 
@@ -1498,13 +1545,15 @@ Chúc các bạn có những thước phim và bài thuyết trình chuyên nghi
     }
 
     /* ============================================================== */
-    /* 12. INITIALIZATION */
+    /* 11. INITIALIZATION */
     /* ============================================================== */
     function init() {
       loadSavedData();
 
       // Sync Editor Inputs
       UI.scriptInput.value = App.scriptText;
+      UI.editorWidthSlider.value = App.contentWidth;
+      UI.editorWidthVal.textContent = `${App.contentWidth}%${App.contentWidth >= 90 ? ' (Tràn màn)' : ''}`;
       UI.editorSpeedSlider.value = App.speedLevel;
       UI.editorSpeedVal.textContent = App.speedLevel.toFixed(1);
       UI.editorSpeedWpm.textContent = getApproxWPM(App.speedLevel);
