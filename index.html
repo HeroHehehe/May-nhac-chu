@@ -310,9 +310,26 @@
             <span class="text-xs font-semibold text-slate-300">Bỏ qua tên nhân vật khi đọc</span>
             <input type="checkbox" id="editorIgnoreCuesToggle" checked class="w-4 h-4 text-indigo-600 rounded bg-slate-800 border-slate-700 focus:ring-indigo-500">
           </label>
-          <div id="cuesInputWrapper" class="space-y-1">
-            <span class="text-[11px] text-slate-400 block">Tên nhân vật / nhãn không cần đọc:</span>
-            <input type="text" id="editorCustomCuesInput" value="phóng viên, học sinh, mc, btv, đạo diễn, nhân vật, khách mời, chuyên gia, người dẫn, biên tập viên, thầy giáo, cô giáo" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono">
+          <div id="cuesInputWrapper" class="space-y-2">
+            <div class="flex items-center justify-between text-[11px] text-slate-400">
+              <span>Danh sách tên nhân vật / vai diễn:</span>
+              <button type="button" id="btnResetCues" class="text-indigo-400 hover:text-indigo-300 hover:underline transition text-[10px]">Khôi phục mặc định</button>
+            </div>
+
+            <!-- Modern Chips Container -->
+            <div id="cuesTagsContainer" class="flex flex-wrap gap-1.5 p-2 bg-slate-900/90 border border-slate-800 rounded-xl min-h-[46px] max-h-44 overflow-y-auto">
+              <!-- Rendered dynamically via JavaScript -->
+            </div>
+
+            <!-- Input with [+] button -->
+            <div class="flex items-center gap-1.5">
+              <input type="text" id="newCueInput" placeholder="Nhập vai mới (ví dụ: Alice, Bác Ba...)" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-indigo-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono">
+              <button type="button" id="btnAddCue" title="Thêm vai mới" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center space-x-1 shadow-sm transition active:scale-95">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                <span>Thêm</span>
+              </button>
+            </div>
+
             <span class="text-[10px] text-slate-500 block">Tự động gắn nhãn nổi bật và bỏ qua các tiền tố như "Phóng viên 1:", "Học sinh 1:", "MC:" hay [Ghi chú].</span>
           </div>
         </div>
@@ -616,6 +633,8 @@
     /**
      * CuePrompter Pro - Sentence Head-Tail Voice AI with Zero DOM Lag & 0.1 Speed Precision
      */
+    const DEFAULT_CUES = ['phóng viên', 'học sinh', 'mc', 'btv', 'đạo diễn', 'nhân vật', 'khách mời', 'chuyên gia', 'người dẫn', 'biên tập viên', 'thầy giáo', 'cô giáo'];
+
     const App = {
       // Configuration
       contentWidth: 95, // 50% to 100% of screen width (Default 95%)
@@ -630,7 +649,7 @@
       useCountdown: true,
       mode: 'speed',    // 'speed' or 'voice'
       ignoreCues: true, // Auto-ignore character/speaker names like "Phóng viên 1:", "Học sinh 1:"
-      customCues: 'phóng viên, học sinh, mc, btv, đạo diễn, nhân vật, khách mời, chuyên gia, người dẫn, biên tập viên, thầy giáo, cô giáo',
+      customCues: [...DEFAULT_CUES],
       tailWordsCount: 5, // 3 to 6 words matched at sentence tail
 
       // Motion & Scroll State
@@ -695,8 +714,11 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
       editorLineHeightSlider: document.getElementById('editorLineHeightSlider'),
       editorLineHeightVal: document.getElementById('editorLineHeightVal'),
       editorIgnoreCuesToggle: document.getElementById('editorIgnoreCuesToggle'),
-      editorCustomCuesInput: document.getElementById('editorCustomCuesInput'),
       cuesInputWrapper: document.getElementById('cuesInputWrapper'),
+      cuesTagsContainer: document.getElementById('cuesTagsContainer'),
+      newCueInput: document.getElementById('newCueInput'),
+      btnAddCue: document.getElementById('btnAddCue'),
+      btnResetCues: document.getElementById('btnResetCues'),
       editorTailWordsSlider: document.getElementById('editorTailWordsSlider'),
       editorTailWordsVal: document.getElementById('editorTailWordsVal'),
       editorCountdownToggle: document.getElementById('editorCountdownToggle'),
@@ -773,7 +795,17 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
           App.useCountdown = parsed.useCountdown ?? true;
           App.mode = parsed.mode ?? 'speed';
           App.ignoreCues = parsed.ignoreCues ?? true;
-          App.customCues = parsed.customCues ?? 'phóng viên, học sinh, mc, btv, đạo diễn, nhân vật, khách mời, chuyên gia, người dẫn, biên tập viên, thầy giáo, cô giáo';
+          if (parsed.customCues) {
+            if (Array.isArray(parsed.customCues)) {
+              App.customCues = parsed.customCues.map(s => String(s).trim().toLowerCase()).filter(Boolean);
+            } else if (typeof parsed.customCues === 'string') {
+              App.customCues = parsed.customCues.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+            } else {
+              App.customCues = [...DEFAULT_CUES];
+            }
+          } else {
+            App.customCues = [...DEFAULT_CUES];
+          }
           App.tailWordsCount = parsed.tailWordsCount ?? 5;
         }
 
@@ -1065,11 +1097,9 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
         return;
       }
 
-      const cueKeywords = (App.customCues || '')
-        .toLowerCase()
-        .split(',')
-        .map(k => k.trim())
-        .filter(Boolean);
+      const cueKeywords = Array.isArray(App.customCues)
+        ? App.customCues
+        : (App.customCues || '').toLowerCase().split(',').map(k => k.trim()).filter(Boolean);
 
       const paragraphs = text.split('\n');
       let sentenceIndex = 0;
@@ -1631,6 +1661,79 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
     });
 
     /* ============================================================== */
+    /* 9.5. CHARACTER ROLES & TAG CHIPS MANAGER */
+    /* ============================================================== */
+    function renderCuesTags() {
+      if (!UI.cuesTagsContainer) return;
+      UI.cuesTagsContainer.innerHTML = '';
+
+      if (!App.customCues || App.customCues.length === 0) {
+        UI.cuesTagsContainer.innerHTML = '<span class="text-[11px] text-slate-500 italic p-1">Chưa có vai nào. Nhập tên vai và bấm [+] để thêm.</span>';
+        return;
+      }
+
+      App.customCues.forEach((tag, idx) => {
+        const chip = document.createElement('span');
+        chip.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-200 text-xs font-medium hover:border-indigo-400/60 transition shadow-sm select-none';
+        
+        const label = document.createElement('span');
+        label.textContent = tag;
+        chip.appendChild(label);
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'text-indigo-400/60 hover:text-red-400 hover:bg-red-500/15 rounded p-0.5 transition ml-0.5 focus:outline-none';
+        delBtn.title = `Xóa "${tag}"`;
+        delBtn.innerHTML = `<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>`;
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeCueTag(idx);
+        });
+        chip.appendChild(delBtn);
+
+        UI.cuesTagsContainer.appendChild(chip);
+      });
+    }
+
+    function addCueTag() {
+      if (!UI.newCueInput) return;
+      const val = UI.newCueInput.value.trim().toLowerCase();
+      if (!val) return;
+
+      const tokens = val.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      let changed = false;
+      tokens.forEach(tok => {
+        if (!App.customCues.includes(tok)) {
+          App.customCues.push(tok);
+          changed = true;
+        }
+      });
+
+      if (changed) {
+        saveSettings();
+        renderCuesTags();
+      }
+      UI.newCueInput.value = '';
+      UI.newCueInput.focus();
+    }
+
+    function removeCueTag(index) {
+      if (index >= 0 && index < App.customCues.length) {
+        App.customCues.splice(index, 1);
+        saveSettings();
+        renderCuesTags();
+      }
+    }
+
+    function resetDefaultCues() {
+      if (confirm('Khôi phục danh sách vai / nhãn về mặc định?')) {
+        App.customCues = [...DEFAULT_CUES];
+        saveSettings();
+        renderCuesTags();
+      }
+    }
+
+    /* ============================================================== */
     /* 10. EVENT LISTENERS (0.1 SPEED PRECISION & CONTROLS) */
     /* ============================================================== */
     function setupEventListeners() {
@@ -1778,10 +1881,14 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
         saveSettings();
       });
 
-      UI.editorCustomCuesInput.addEventListener('input', (e) => {
-        App.customCues = e.target.value;
-        saveSettings();
+      UI.btnAddCue.addEventListener('click', addCueTag);
+      UI.newCueInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addCueTag();
+        }
       });
+      UI.btnResetCues.addEventListener('click', resetDefaultCues);
 
       // Tail Words setting for Voice Tracking
       UI.editorTailWordsSlider.addEventListener('input', (e) => {
@@ -1929,8 +2036,8 @@ MC: Chúc các bạn có những thước phim và bài thuyết trình chuyên 
       UI.editorFlipX.checked = App.flipX;
       UI.editorFlipY.checked = App.flipY;
       UI.editorIgnoreCuesToggle.checked = App.ignoreCues;
-      UI.editorCustomCuesInput.value = App.customCues;
       UI.cuesInputWrapper.style.display = App.ignoreCues ? 'block' : 'none';
+      renderCuesTags();
       UI.editorTailWordsSlider.value = App.tailWordsCount;
       UI.editorTailWordsVal.textContent = `${App.tailWordsCount} từ`;
 
